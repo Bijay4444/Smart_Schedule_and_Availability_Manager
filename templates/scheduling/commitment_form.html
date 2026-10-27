@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object.pk %}Edit{% else %}Add{% endif %} commitment | Smart Schedule{% endblock %}
+
+{% block content %}
+  <section class="card border-0 shadow-sm p-4 p-sm-5 editor-card mx-auto" aria-labelledby="commitment-heading">
+    <p class="eyebrow mb-2">Protect your time</p>
+    <h1 class="h3" id="commitment-heading">{% if object.pk %}Edit{% else %}Add{% endif %} commitment</h1>
+    <p class="text-secondary">Enter a one-time class, shift, or personal commitment. Times use Halifax time.</p>
+    <p class="small"><a href="{% url 'scheduling:source_create' %}">Need another source? Add one first.</a></p>
+    <form method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% for field in form %}
+        {% if field.name != 'confirm_conflicts' %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}
+            {% if field.errors %}<div class="text-danger small" id="{{ field.auto_id }}_error">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      {% if conflicts %}
+        <div class="alert alert-warning" role="alert">
+          <h2 class="h6">This overlaps your existing commitments</h2>
+          <ul>
+            {% for conflict in conflicts %}
+              <li>{{ conflict.title }} ({{ conflict.starts_at|date:'D j M, H:i' }} → {{ conflict.ends_at|date:'D j M, H:i' }})</li>
+            {% endfor %}
+          </ul>
+          <div class="form-check">
+            {{ form.confirm_conflicts }}
+            <label class="form-check-label" for="{{ form.confirm_conflicts.id_for_label }}">{{ form.confirm_conflicts.label }}</label>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit">Save commitment</button>
+        <a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

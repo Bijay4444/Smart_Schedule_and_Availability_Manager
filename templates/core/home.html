@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Your schedule | Smart Schedule{% endblock %}
+
+{% block content %}
+  <section class="card border-0 shadow-sm p-4 p-sm-5" aria-labelledby="welcome-heading">
+    <p class="eyebrow mb-2">Your space, your week</p>
+    <h1 class="h2 mb-3" id="welcome-heading">Welcome, {{ user.get_short_name|default:user.username }}.</h1>
+    <p class="text-secondary mb-0">Bring your classes, jobs, and personal commitments together in one place.</p>
+    <a class="btn btn-primary align-self-start mt-4" href="{% url 'scheduling:commitment_list' %}">Manage commitments</a>
+  </section>
+{% endblock %}

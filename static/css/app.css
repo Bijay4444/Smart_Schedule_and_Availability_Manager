@@ -1,0 +1,79 @@
+:root {
+  --bs-primary: #315c52;
+  --bs-primary-rgb: 49, 92, 82;
+}
+
+body {
+  background: #f4f6f3;
+  color: #20352e;
+  min-height: 100vh;
+}
+
+.brand {
+  color: #20352e;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.auth-card {
+  max-width: 29rem;
+}
+
+.card {
+  border-radius: 1rem;
+}
+
+.eyebrow {
+  color: #315c52;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.btn-primary {
+  --bs-btn-bg: #315c52;
+  --bs-btn-border-color: #315c52;
+  --bs-btn-hover-bg: #24483f;
+  --bs-btn-hover-border-color: #24483f;
+  --bs-btn-active-bg: #24483f;
+  --bs-btn-active-border-color: #24483f;
+}
+
+.form-control:focus {
+  border-color: #315c52;
+  box-shadow: 0 0 0 0.2rem rgb(49 92 82 / 15%);
+}
+
+.errorlist {
+  margin-bottom: 0;
+  padding-left: 1.2rem;
+}
+
+.editor-card {
+  max-width: 43rem;
+}
+
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #dce3dc;
+  border-radius: 2rem;
+  background: white;
+  font-size: 0.875rem;
+}
+
+.source-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1px solid rgb(0 0 0 / 12%);
+  border-radius: 50%;
+}
+
+.commitment-item {
+  border: 1px solid #dce3dc;
+  border-left: 0.35rem solid;
+}
