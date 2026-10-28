@@ -1,12 +1,27 @@
 {% extends 'base.html' %}
 
 {% block title %}Your schedule | Smart Schedule{% endblock %}
+{% block page_name %}Overview{% endblock %}
 
 {% block content %}
-  <section class="card border-0 shadow-sm p-4 p-sm-5" aria-labelledby="welcome-heading">
-    <p class="eyebrow mb-2">Your space, your week</p>
-    <h1 class="h2 mb-3" id="welcome-heading">Welcome, {{ user.get_short_name|default:user.username }}.</h1>
-    <p class="text-secondary mb-0">Bring your classes, jobs, and personal commitments together in one place.</p>
-    <a class="btn btn-primary align-self-start mt-4" href="{% url 'scheduling:commitment_list' %}">Manage commitments</a>
+  <section class="overview-page" aria-labelledby="welcome-heading">
+    <div class="page-heading">
+      <div><h1 id="welcome-heading">Welcome, {{ user.get_short_name|default:user.username }}.</h1><p class="page-description">Bring your classes, jobs, and personal commitments together in one place.</p></div>
+      <a class="btn btn-primary" href="{% url 'scheduling:week' %}">{% include 'components/icon.html' with name='calendar' %}See your week</a>
+    </div>
+    <div class="overview-content">
+      <section class="overview-main" aria-labelledby="overview-schedule-heading">
+        <div class="overview-calendar-mark">{% include 'components/icon.html' with name='calendar' %}</div>
+        <h2 id="overview-schedule-heading">One place for every part of your week.</h2>
+        <p>See your commitments together, spot overlaps, and keep personal time in the picture.</p>
+        <a class="text-link" href="{% url 'scheduling:commitment_list' %}">Manage commitments{% include 'components/icon.html' with name='arrow' %}</a>
+      </section>
+      <section class="overview-start" aria-labelledby="start-heading">
+        <h2 id="start-heading">Make it your schedule</h2>
+        <a class="overview-step" href="{% url 'scheduling:source_create' %}">{% include 'components/icon.html' with name='tag' %}<span><strong>Add a source</strong><small>Classes, a job, or personal commitments.</small></span>{% include 'components/icon.html' with name='right' %}</a>
+        <a class="overview-step" href="{% url 'scheduling:commitment_create' %}">{% include 'components/icon.html' with name='plus' %}<span><strong>Add a commitment</strong><small>Give it a date, time, and a place in your week.</small></span>{% include 'components/icon.html' with name='right' %}</a>
+        <a class="overview-step" href="{% url 'scheduling:week' %}">{% include 'components/icon.html' with name='calendar' %}<span><strong>See it all together</strong><small>Open your weekly calendar.</small></span>{% include 'components/icon.html' with name='right' %}</a>
+      </section>
+    </div>
   </section>
 {% endblock %}

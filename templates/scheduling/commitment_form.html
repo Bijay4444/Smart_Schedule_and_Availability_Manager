@@ -1,48 +1,33 @@
 {% extends 'base.html' %}
 
 {% block title %}{% if object.pk %}Edit{% else %}Add{% endif %} commitment | Smart Schedule{% endblock %}
+{% block page_name %}{% if object.pk %}Edit{% else %}Add{% endif %} commitment{% endblock %}
 
 {% block content %}
-  <section class="card border-0 shadow-sm p-4 p-sm-5 editor-card mx-auto" aria-labelledby="commitment-heading">
-    <p class="eyebrow mb-2">Protect your time</p>
-    <h1 class="h3" id="commitment-heading">{% if object.pk %}Edit{% else %}Add{% endif %} commitment</h1>
-    <p class="text-secondary">Enter a one-time class, shift, or personal commitment. Times use Halifax time.</p>
-    <p class="small"><a href="{% url 'scheduling:source_create' %}">Need another source? Add one first.</a></p>
-    <form method="post">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
-      {% endif %}
-      {% for field in form %}
-        {% if field.name != 'confirm_conflicts' %}
-          <div class="mb-3">
-            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}<div class="form-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}
-            {% if field.errors %}<div class="text-danger small" id="{{ field.auto_id }}_error">{{ field.errors }}</div>{% endif %}
+  <div class="editor-layout">
+    <a class="back-link" href="{{ return_url }}">{% include 'components/icon.html' with name='left' %}Back to your schedule</a>
+    <section class="editor-surface" aria-labelledby="commitment-heading">
+      <header class="editor-heading"><h1 id="commitment-heading">{% if object.pk %}Edit{% else %}Add{% endif %} commitment</h1><p class="page-description">Enter a one-time class, shift, or personal commitment. Times use Halifax time.</p></header>
+      <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="form-grid">
+          {% for field in form %}
+            {% if field.name != 'confirm_conflicts' %}
+              <div{% if field.name == 'title' or field.name == 'source' %} class="form-grid-wide"{% endif %}>{% include 'components/form_field.html' %}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <p class="form-related-link"><a class="text-link" href="{% url 'scheduling:source_create' %}">{% include 'components/icon.html' with name='plus' %}Need another source? Add one first.</a></p>
+        {% if conflicts %}
+          <div class="alert alert-warning conflict-warning" role="alert">
+            <h2>{% include 'components/icon.html' with name='warning' %}This overlaps your existing commitments</h2>
+            <ul>{% for conflict in conflicts %}<li><strong>{{ conflict.title }}</strong><br>{{ conflict.starts_at|date:'D j M, H:i' }} – {{ conflict.ends_at|date:'D j M, H:i' }}</li>{% endfor %}</ul>
+            <div class="form-check">{{ form.confirm_conflicts }}<label class="form-check-label" for="{{ form.confirm_conflicts.id_for_label }}">{{ form.confirm_conflicts.label }}</label></div>
           </div>
         {% endif %}
-      {% endfor %}
-
-      {% if conflicts %}
-        <div class="alert alert-warning" role="alert">
-          <h2 class="h6">This overlaps your existing commitments</h2>
-          <ul>
-            {% for conflict in conflicts %}
-              <li>{{ conflict.title }} ({{ conflict.starts_at|date:'D j M, H:i' }} → {{ conflict.ends_at|date:'D j M, H:i' }})</li>
-            {% endfor %}
-          </ul>
-          <div class="form-check">
-            {{ form.confirm_conflicts }}
-            <label class="form-check-label" for="{{ form.confirm_conflicts.id_for_label }}">{{ form.confirm_conflicts.label }}</label>
-          </div>
-        </div>
-      {% endif %}
-
-      <div class="d-flex gap-2 mt-4">
-        <button class="btn btn-primary" type="submit">Save commitment</button>
-        <a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">Cancel</a>
-      </div>
-    </form>
-  </section>
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Save commitment</button><a class="btn btn-outline-secondary" href="{{ return_url }}">Cancel</a></div>
+      </form>
+    </section>
+  </div>
 {% endblock %}

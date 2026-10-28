@@ -19,13 +19,17 @@ screens, overnight dates, overlap warnings with explicit confirmation, and
 persistent conflict indicators. Source archival and protected references retain
 existing commitments. Recurring series, dated revisions, weekdays, and exceptions
 are stored in the new tables, with PostgreSQL revision-period exclusions.
-The 170-test PostgreSQL suite passes, including migration preservation and
+The 189-test PostgreSQL suite passes, including migration preservation and
 concurrent writes. Recurring services now support creation, future edits,
 ending, one-off exceptions, and bounded occurrence generation with DST metadata
 and review issues. A prior live HTTP check passed the existing workflow and
-archived-source correction. Conflict integration, recurring forms, working
-windows, availability, and the visual weekly calendar remain future increments.
+archived-source correction. The weekly calendar is now available at `/week/`,
+with source colors, overnight portions, date-to-form entry, details, visible
+overlap indicators, and a phone agenda. Chromium checks passed at desktop,
+phone, and tablet sizes. Conflict-save integration, recurring forms, working
+windows, and availability remain future increments.
 See the [recurrence service guide](recurrence_services.md) for architecture,
+the [calendar guide](weekly_calendar.md) for the frontend,
 the [development checklist](development_checklist.md) for task status, and
 [README.md](../README.md) for setup and verification.
 
@@ -203,6 +207,11 @@ preserving the input-to-availability journey.
   not claim that a gap is long enough for an employer to offer a shift.
 
 ### Agreed frontend direction
+
+The user requested Impeccable guidance for the whole application, covering every
+existing template. Shared navigation, typography, controls, forms, feedback,
+and responsive patterns are documented in [frontend_style.md](frontend_style.md).
+The current pass retains the green identity and uses self-hosted Instrument Sans.
 
 The weekly calendar supports previous/next navigation and opening a commitment
 form by clicking a day. Stable colors distinguish commitment sources such as

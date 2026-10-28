@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Your week · {{ week.start|date:'j M' }} | Smart Schedule{% endblock %}
+{% block page_name %}Your week{% endblock %}
+
+{% block content %}
+  <section class="week-page" aria-labelledby="week-title">
+    <div class="week-intro">
+      <div>
+        <h1 id="week-title">Your week, in view.</h1>
+        <p class="week-description">Classes, shifts, and the time you protect for yourself. Together.</p>
+      </div>
+      <a class="btn btn-primary calendar-add" href="{% url 'scheduling:commitment_create' %}?week={{ week.start|date:'Y-m-d' }}">
+        {% include 'components/icon.html' with name='plus' %}Add commitment
+      </a>
+    </div>
+
+    <div class="week-toolbar">
+      <div class="week-navigation">
+        <div class="week-arrows" role="group" aria-label="Navigate weeks">
+          {% if week.previous %}<a class="calendar-icon-button" href="?week={{ week.previous|date:'Y-m-d' }}" aria-label="Previous week">{% include 'components/icon.html' with name='left' %}</a>{% endif %}
+          {% if week.next %}<a class="calendar-icon-button" href="?week={{ week.next|date:'Y-m-d' }}" aria-label="Next week">{% include 'components/icon.html' with name='right' %}</a>{% endif %}
+        </div>
+        <h2 class="week-range">{{ week.start|date:'j M' }} – {{ week.end|date:'j M Y' }}</h2>
+        <a class="calendar-today" href="{% url 'scheduling:week' %}">Today</a>
+      </div>
+      <div class="calendar-view-switch" aria-label="Schedule views">
+        <span aria-current="page">Week</span>
+        <a href="{% url 'scheduling:commitment_list' %}">List</a>
+      </div>
+    </div>
+
+    <div class="week-meta">
+      <div class="calendar-legend" aria-label="Commitment sources">
+        {% for source in week.sources %}
+          <span class="calendar-source"><span class="source-dot" style="background-color: {{ source.color }};" aria-hidden="true"></span>{{ source.name }}</span>
+        {% empty %}
+          <a href="{% url 'scheduling:source_create' %}">Add your first source</a>
+        {% endfor %}
+      </div>
+      <span class="calendar-zone">Halifax time · America/Halifax</span>
+    </div>
+
+    {% if week.issues %}
+      <aside class="alert alert-warning calendar-review" aria-labelledby="review-heading">
+        <h2 class="h6" id="review-heading">Some times need a closer look</h2>
+        <p>A clock change leaves these commitments without a valid interval. Their affected dates are incomplete.</p>
+        <ul class="mb-0">
+          {% for issue in week.issues %}<li>{{ issue.original_start_date|date:'D j M' }} · {{ issue.title }} — {{ issue.message }}</li>{% endfor %}
+        </ul>
+      </aside>
+    {% endif %}
+
+    {% if not week.entry_count and not week.issues %}
+      <div class="week-empty-note">
+        {% include 'components/icon.html' with name='calendar' %}
+        <div><strong>A fresh page for your week.</strong> Choose a day to add a class, shift, or personal commitment.</div>
+      </div>
+    {% endif %}
+
+    <div class="calendar-frame">
+      <div class="calendar-scroll" tabindex="0" role="region" aria-label="Weekly schedule. Scroll to see all hours." data-initial-minute="{{ week.initial_minute|floatformat:'0u' }}">
+        <div class="calendar-grid" style="--week-minutes: {{ week.max_minutes|floatformat:'0u' }};">
+          {% for day in week.days %}
+            <section class="calendar-day{% if day.is_today %} is-today{% endif %}" aria-labelledby="day-{{ day.date|date:'Y-m-d' }}">
+              <a class="calendar-day-heading" id="day-{{ day.date|date:'Y-m-d' }}" href="{% url 'scheduling:commitment_create' %}?date={{ day.date|date:'Y-m-d' }}&amp;week={{ week.start|date:'Y-m-d' }}" aria-label="Add commitment on {{ day.date|date:'l j F Y' }}">
+                <span class="calendar-day-name">{{ day.date|date:'D' }}{% if day.is_today %}<span class="today-dot" aria-label="Today"></span>{% endif %}</span>
+                <span class="calendar-day-number">{{ day.date|date:'j' }}<span class="calendar-day-plus">{% include 'components/icon.html' with name='plus' %}</span></span>
+                {% if day.minutes != 1440 %}<span class="calendar-day-length">{{ day.length_hours }}-hour day · clock change</span>{% endif %}
+              </a>
+              <div class="calendar-day-body" style="--day-minutes: {{ day.minutes|floatformat:'0u' }};">
+                <div class="calendar-hour-lines" aria-hidden="true">
+                  {% for hour in day.hours %}<span class="calendar-hour" style="--at-minute: {{ hour.minute }};">{{ hour.label }}</span>{% endfor %}
+                </div>
+                {% if not day.blocks %}<p class="calendar-empty-day">No commitments</p>{% endif %}
+                <div class="calendar-blocks">
+                  {% for block in day.blocks %}
+                    <article class="calendar-block{% if block.entry.has_conflict %} has-conflict{% endif %}" style="--source-color: {{ block.entry.source.color }}; --at-minute: {{ block.top_minutes|floatformat:'5u' }}; --duration: {{ block.height_minutes|floatformat:'5u' }}; --lane-left: {{ block.left_percent }}%; --lane-width: {{ block.width_percent }}%;" aria-label="{{ block.entry.title }}, {{ block.start_label }} to {{ block.end_label }}, {{ block.entry.source.name }}{% if block.entry.has_conflict %}, overlaps another commitment{% endif %}">
+                      <h3 class="calendar-block-title"><button type="button" popovertarget="detail-{{ day.date|date:'Y-m-d' }}-{{ forloop.counter }}" title="{{ block.entry.title }}">{{ block.entry.title }}</button></h3>
+                      <p class="calendar-block-time"><time datetime="{{ block.starts_at|date:'c' }}">{% if block.start_label|slice:'6:' == block.end_label|slice:'6:' %}{{ block.start_label|slice:':5' }}{% else %}{{ block.start_label }}{% endif %}</time><span aria-hidden="true">–</span><time datetime="{{ block.ends_at|date:'c' }}">{% if block.start_label|slice:'6:' == block.end_label|slice:'6:' %}{{ block.end_label|slice:':5' }}{% else %}{{ block.end_label }}{% endif %}</time></p>
+                      <p class="calendar-block-source">{{ block.entry.source.name }} · {{ block.entry.kind }}</p>
+                      {% if block.continues_before %}<p class="calendar-continuation">{% include 'components/icon.html' with name='continue' %}From previous day</p>{% endif %}
+                      {% if block.continues_after %}<p class="calendar-continuation">Continues next day{% include 'components/icon.html' with name='arrow' %}</p>{% endif %}
+                      {% if block.entry.has_conflict %}<span class="calendar-conflict" title="Overlapping commitment">{% include 'components/icon.html' with name='warning' %}<span class="calendar-conflict-label">Overlapping</span></span>{% endif %}
+                      {% for note in block.entry.adjustments %}<p class="calendar-adjustment">{{ note }}</p>{% endfor %}
+                      <div class="calendar-detail" id="detail-{{ day.date|date:'Y-m-d' }}-{{ forloop.counter }}" role="dialog" aria-labelledby="detail-title-{{ day.date|date:'Y-m-d' }}-{{ forloop.counter }}" popover>
+                        <div class="d-flex align-items-start justify-content-between gap-3">
+                          <h2 id="detail-title-{{ day.date|date:'Y-m-d' }}-{{ forloop.counter }}">{{ block.entry.title }}</h2>
+                          <button class="calendar-detail-close" type="button" popovertarget="detail-{{ day.date|date:'Y-m-d' }}-{{ forloop.counter }}" popovertargetaction="hide" aria-label="Close commitment details" autofocus>{% include 'components/icon.html' with name='close' %}</button>
+                        </div>
+                        <p class="calendar-detail-kind">{{ block.entry.kind }} commitment</p>
+                        <p><span class="source-dot d-inline-block" style="background-color: {{ block.entry.source.color }};" aria-hidden="true"></span> {{ block.entry.source.name }}</p>
+                        <p>{{ day.date|date:'l j F Y' }}<br>{{ block.start_label }} – {{ block.end_label }}</p>
+                        {% if block.continues_before %}<p class="small">Continues from the previous day.</p>{% endif %}
+                        {% if block.continues_after %}<p class="small">Continues into the following day.</p>{% endif %}
+                        {% if block.entry.has_conflict %}<p class="calendar-detail-warning">Overlaps another commitment in this week.</p>{% endif %}
+                        {% for note in block.entry.adjustments %}<p class="small">{{ note }}</p>{% endfor %}
+                        {% if block.entry.commitment_id %}<a class="btn btn-primary btn-sm" href="{% url 'scheduling:commitment_update' block.entry.commitment_id %}?week={{ week.start|date:'Y-m-d' }}">Edit commitment</a>{% endif %}
+                      </div>
+                    </article>
+                  {% endfor %}
+                </div>
+              </div>
+            </section>
+          {% endfor %}
+        </div>
+      </div>
+      <footer class="calendar-footer">
+        <span>{{ week.entry_count }} commitment{{ week.entry_count|pluralize }} this week{% if week.conflict_count %} · {{ week.conflict_count }} overlapping{% endif %}</span>
+        <span class="calendar-hint">Select a day to add time. Select a commitment for details.</span>
+      </footer>
+    </div>
+    <p class="calendar-footnote">An open space on your calendar isn’t automatically time you can offer for work.</p>
+  </section>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/calendar.js' %}" defer></script>{% endblock %}

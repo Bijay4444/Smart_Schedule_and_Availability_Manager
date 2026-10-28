@@ -92,7 +92,7 @@ overnight CRUD, conflict warning/confirmation, archived-source choices and
 correction, and logout; its temporary records were removed. A private database
 backup was taken before migration.
 
-Recurring-service verification: the full suite now passes 170 PostgreSQL tests.
+Recurring-service increment verification: 170 PostgreSQL tests passed at that stage.
 New coverage includes the agreed overnight/DST/history/exception scenarios,
 failure rollback after closing a revision, simultaneous future edits and
 duplicate cancellations, private reads/writes, non-hour clock changes, skipped
@@ -112,12 +112,33 @@ reasoning, and the remaining conflict/frontend integration boundary.
 
 ## 5. Weekly frontend and sharing
 
-- [ ] Monday–Sunday visual calendar with previous/next navigation.
-- [ ] Stable source colors and labels; overnight portions on both affected dates.
-- [ ] Click a day to open an entry form with that date.
+- [x] Monday–Sunday visual calendar with previous/next and Today navigation.
+- [x] Stable source colors and labels; overnight portions on both affected dates.
+- [x] Click a day to open an entry form with that date; return to the selected week.
+- [x] Full commitment details with one-time editing from the calendar.
+- [x] Calendar indicators for visible one-time and recurring overlaps.
+- [x] Show DST choices and unresolved interval review issues.
 - [ ] Display work availability and copy employer-facing text without private details.
-- [ ] Usable phone layout, clear validation, and reduced-motion support.
-- [ ] Add subtle animation polish after the core workflow works.
+- [x] Phone agenda layout, date validation, and reduced-motion support.
+- [x] Subtle calendar entrance and hover transitions respecting reduced motion.
+- [x] Install Impeccable and apply shared styling to every existing app template:
+  navigation, typography, icons, controls, forms, lists, and confirmation/error states.
+
+Weekly-frontend verification: 189 tests pass on PostgreSQL. Chromium checks
+passed desktop (1440px), phone (390px), and tablet (820px), including date-to-form
+entry/save, week return/navigation, full details, overnight/DST, overlaps, and
+JavaScript-disabled navigation/details. Temporary browser tooling and library
+copies stayed under `/tmp`; no application dependency or migration was added.
+The sample account and all its records were removed. See
+[weekly_calendar.md](weekly_calendar.md) for architecture and remaining boundaries.
+
+App-wide style verification: all existing templates were captured before/after
+on desktop and phone, with tablet and narrow-phone checks. Browser workflows
+covered entry/edit/delete, overlap confirmation, validation, popovers, and
+JavaScript-disabled calendar navigation. Text contrast and local-font loading
+were checked in the browser. Impeccable's source scan had incomplete CSS coverage
+because of Django static tags; see [frontend_style.md](frontend_style.md) for the
+installation, shared patterns, and evidence.
 
 ## 6. Demo readiness
 

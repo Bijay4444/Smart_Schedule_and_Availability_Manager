@@ -5,30 +5,54 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Smart Schedule{% endblock %}</title>
+    <link rel="preload" href="{% static 'fonts/instrument-sans-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link href="{% static 'css/app.css' %}" rel="stylesheet">
   </head>
-  <body>
-    <header class="site-header border-bottom bg-white">
-      <nav class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3" aria-label="Account navigation">
-        <a class="brand text-decoration-none" href="{% url 'home' %}">Smart Schedule</a>
-        {% if user.is_authenticated %}
-          <div class="d-flex flex-wrap align-items-center gap-3">
-            <a class="text-decoration-none text-secondary" href="{% url 'scheduling:commitment_list' %}">Commitments</a>
-            <span class="text-secondary">{{ user.username }}</span>
+  <body class="{% if user.is_authenticated %}app-layout{% else %}auth-layout{% endif %}">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    {% if user.is_authenticated %}
+      {% with route=request.resolver_match.url_name %}
+      <div class="app-shell">
+        <aside class="app-sidebar" aria-label="Workspace">
+          <a class="brand" href="{% url 'home' %}">{% include 'components/icon.html' with name='calendar' %}<span>Smart Schedule</span></a>
+          <nav class="primary-nav" aria-label="Main navigation">
+            <a href="{% url 'home' %}"{% if route == 'home' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='home' %}<span>Overview</span></a>
+            <a href="{% url 'scheduling:week' %}"{% if route == 'week' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='calendar' %}<span>Your week</span></a>
+            <a href="{% url 'scheduling:commitment_list' %}"{% if route == 'commitment_list' or route == 'commitment_create' or route == 'commitment_update' or route == 'commitment_delete' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='list' %}<span>Commitments</span></a>
+            <a href="{% url 'scheduling:source_create' %}"{% if route == 'source_create' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='tag' %}<span>Add source</span></a>
+          </nav>
+          <div class="sidebar-note">
+            {% include 'components/icon.html' with name='lock' %}
+            <div><strong>Your space, your schedule.</strong><p>Bring classes, work, and personal time together in one place.</p></div>
+          </div>
+          <div class="sidebar-account">
+            <span class="account-avatar" aria-hidden="true">{{ user.get_short_name|default:user.username|slice:':1'|upper }}</span>
+            <div class="account-name"><strong title="{{ user.username }}">{{ user.get_short_name|default:user.username }}</strong><span>Personal workspace</span></div>
             <form action="{% url 'logout' %}" method="post">
               {% csrf_token %}
-              <button class="btn btn-outline-secondary btn-sm" type="submit">Sign out</button>
+              <button class="icon-button signout-button" type="submit" aria-label="Sign out" title="Sign out">{% include 'components/icon.html' with name='logout' %}<span class="visually-hidden">Sign out</span></button>
             </form>
           </div>
-        {% endif %}
-      </nav>
-    </header>
-    <main class="container py-5" id="main-content">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }}" role="status">{{ message }}</div>
-      {% endfor %}
-      {% block content %}{% endblock %}
-    </main>
+        </aside>
+        <div class="app-workspace">
+          <header class="workspace-topbar">
+            <div class="workspace-breadcrumb"><span>Workspace</span>{% include 'components/icon.html' with name='right' %}<span>{% block page_name %}Overview{% endblock %}</span></div>
+            <span class="workspace-timezone">{% include 'components/icon.html' with name='clock' %} Halifax time</span>
+          </header>
+      {% endwith %}
+    {% else %}
+      <div class="auth-shell">
+        <header class="auth-header"><a class="brand" href="{% url 'home' %}">{% include 'components/icon.html' with name='calendar' %}<span>Smart Schedule</span></a></header>
+    {% endif %}
+          <main class="{% if user.is_authenticated %}workspace-main{% else %}auth-main{% endif %}" id="main-content" tabindex="-1">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags|default:'info' }}" role="status">{{ message }}</div>
+            {% endfor %}
+            {% block content %}{% endblock %}
+          </main>
+        </div>
+    {% if user.is_authenticated %}</div>{% endif %}
+    {% block scripts %}{% endblock %}
   </body>
 </html>

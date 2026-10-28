@@ -3,31 +3,33 @@
 {% block title %}Sign in | Smart Schedule{% endblock %}
 
 {% block content %}
-  <section class="auth-card card border-0 shadow-sm mx-auto" aria-labelledby="login-heading">
-    <div class="card-body p-4 p-sm-5">
-      <p class="eyebrow mb-2">A clearer week</p>
-      <h1 class="h3 mb-2" id="login-heading">Sign in to your schedule</h1>
-      <p class="text-secondary mb-4">Make room for classes, work, and life.</p>
-
-      {% if form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
-      {% endif %}
-
+  <div class="signin-layout">
+    <section class="signin-intro" aria-label="About Smart Schedule">
+      <div class="signin-wordmark">{% include 'components/icon.html' with name='calendar' %}</div>
+      <p class="signin-statement">A clearer week.<br>More room for life.</p>
+      <p>Bring your classes, jobs, and personal commitments together in one place.</p>
+      <div class="signin-possibilities"><span>Classes</span><span>Work</span><span>Personal time</span></div>
+    </section>
+    <section class="auth-card" aria-labelledby="login-heading">
+      <h1 id="login-heading">Sign in to your schedule</h1>
+      <p class="page-description">Make room for classes, work, and life.</p>
+      {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
       <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-        <div class="mb-3">
+        <div class="form-field">
           <label class="form-label" for="id_username">Username</label>
-          <input class="form-control" type="text" name="username" id="id_username" value="{{ form.username.value|default_if_none:'' }}" autocomplete="username" maxlength="150" required autofocus>
-          {{ form.username.errors }}
+          <input class="form-control" type="text" name="username" id="id_username" value="{{ form.username.value|default_if_none:'' }}" autocomplete="username" maxlength="150" required autofocus{% if form.username.errors %} aria-invalid="true" aria-describedby="id_username_error"{% endif %}>
+          {% if form.username.errors %}<div class="field-error" id="id_username_error">{{ form.username.errors }}</div>{% endif %}
         </div>
-        <div class="mb-4">
+        <div class="form-field">
           <label class="form-label" for="id_password">Password</label>
-          <input class="form-control" type="password" name="password" id="id_password" autocomplete="current-password" required>
-          {{ form.password.errors }}
+          <input class="form-control" type="password" name="password" id="id_password" autocomplete="current-password" required{% if form.password.errors %} aria-invalid="true" aria-describedby="id_password_error"{% endif %}>
+          {% if form.password.errors %}<div class="field-error" id="id_password_error">{{ form.password.errors }}</div>{% endif %}
         </div>
-        <button class="btn btn-primary w-100" type="submit">Sign in</button>
+        <button class="btn btn-primary signin-submit" type="submit">Sign in{% include 'components/icon.html' with name='arrow' %}</button>
       </form>
-    </div>
-  </section>
+      <p class="signin-privacy">{% include 'components/icon.html' with name='lock' %} Your schedule stays in your own account.</p>
+    </section>
+  </div>
 {% endblock %}

@@ -3,7 +3,7 @@
 Status: requirements DB1–DB17 and the schema/migration plan were confirmed in
 DB18. Source archival, the recurring database foundation, and recurring
 calculation/write services are implemented. Working-availability
-tables and conflict/frontend integration remain scheduled increments. Existing
+tables and recurring save-conflict/form integration remain scheduled increments. Existing
 user data is preserved.
 
 See the [project specification](project_spec.md), [glossary](../GLOSSARY.md),
@@ -316,7 +316,7 @@ and after migration and remained unchanged. New recurrence tables start empty.
 A private pg_dump backup was created and its archive listing validated before
 migration; it is a local recovery artifact, not part of the repository.
 
-All 170 PostgreSQL tests pass. The suite covers legacy migration preservation,
+All 189 PostgreSQL tests pass. The suite covers legacy migration preservation,
 temporal exclusion (including concurrent inserts), payload/weekday/date constraints, deletion
 protection, and source archival behavior. New-source choices exclude archived
 sources; existing commitments can keep theirs. The archive service checks
@@ -328,7 +328,8 @@ Recurring services now implement atomic creation with a first revision and
 weekdays, future edits, series ending, occurrence validation/cancellation/
 rescheduling, DST resolution, and bounded occurrence expansion. No recurring
 writes are exposed through browser routes, APIs, or admin; conflict warnings
-and frontend integration must precede enabling those flows. Database checks
+and recurring forms must precede enabling those flows. The weekly calendar now
+reads recurring occurrences. Database checks
 do not enforce cross-row ownership, continuous revision coverage, immutable
 history, or at least one weekday; the services enforce these workflow rules.
 See [recurrence_services.md](recurrence_services.md) for interfaces and evidence.

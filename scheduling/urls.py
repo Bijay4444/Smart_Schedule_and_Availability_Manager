@@ -5,6 +5,7 @@ from . import views
 
 app_name = "scheduling"
 urlpatterns = [
+    path("week/", views.WeeklyCalendarView.as_view(), name="week"),
     path("commitments/", views.CommitmentListView.as_view(), name="commitment_list"),
     path("sources/new/", views.SourceCreateView.as_view(), name="source_create"),
     path("commitments/new/", views.CommitmentCreateView.as_view(), name="commitment_create"),

@@ -99,7 +99,8 @@ Related rows are prefetched to avoid a separate query for each occurrence.
 
 ## Verification and next integration
 
-The complete PostgreSQL suite passes 170 tests. Recurrence coverage includes
+The complete PostgreSQL suite now passes 189 tests, including calendar coverage.
+Recurrence coverage includes
 atomic creation and rollback, earlier-week preservation, all-future edits,
 exception persistence, moves across weeks, inclusive last overnight occurrences,
 end cutoffs, archival, ownership, UTC boundaries, DST, and bounded query counts.
@@ -114,7 +115,8 @@ The service tests require both edits/cancellations to complete through the paren
 lock and do not catch deadlock failures. PostgreSQL resolves a detected deadlock
 by aborting a transaction; see its [locking documentation](https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-DEADLOCKS).
 
-Next, connect recurring and one-time occupied intervals to conflict checks and
+The [weekly calendar](weekly_calendar.md) now consumes the read service. Next,
+connect recurring and one-time occupied intervals to save conflict checks and
 confirmation, then expose recurring forms and visible clock-resolution/review
 messages. The current recurring write services enforce domain integrity; they
 do not perform conflict preflight or claim that an infinite future series is

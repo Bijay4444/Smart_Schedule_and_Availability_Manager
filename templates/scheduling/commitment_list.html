@@ -1,60 +1,34 @@
 {% extends 'base.html' %}
 
 {% block title %}Commitments | Smart Schedule{% endblock %}
+{% block page_name %}Commitments{% endblock %}
 
 {% block content %}
-  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-    <div>
-      <p class="eyebrow mb-2">Make your week visible</p>
-      <h1 class="h2 mb-2">Your commitments</h1>
-      <p class="text-secondary mb-0">Classes, shifts, and personal time. All times are shown in Halifax time.</p>
-    </div>
-    <div class="d-flex gap-2">
-      <a class="btn btn-outline-secondary" href="{% url 'scheduling:source_create' %}">Add source</a>
-      {% if sources %}
-        <a class="btn btn-primary" href="{% url 'scheduling:commitment_create' %}">Add commitment</a>
-      {% endif %}
-    </div>
+  <div class="page-heading">
+    <div><h1>Your commitments</h1><p class="page-description">Classes, shifts, and personal time. All times are shown in Halifax time.</p></div>
+    <div class="heading-actions"><a class="btn btn-outline-secondary" href="{% url 'scheduling:source_create' %}">{% include 'components/icon.html' with name='tag' %}Add source</a>{% if sources %}<a class="btn btn-primary" href="{% url 'scheduling:commitment_create' %}">{% include 'components/icon.html' with name='plus' %}Add commitment</a>{% endif %}</div>
   </div>
-
   {% if sources %}
-    <div class="d-flex flex-wrap gap-2 mb-4" aria-label="Your commitment sources">
-      {% for source in sources %}
-        <span class="source-chip"><span class="source-dot" style="background-color: {{ source.color }};" aria-hidden="true"></span>{{ source.name }}</span>
-      {% endfor %}
-    </div>
+    <div class="source-legend" aria-label="Your commitment sources">{% for source in sources %}<span class="source-chip"><span class="source-dot" style="background-color: {{ source.color }};" aria-hidden="true"></span>{{ source.name }}</span>{% endfor %}</div>
   {% endif %}
-
-  {% for commitment in commitments %}
-    <article class="card commitment-item mb-3" style="border-left-color: {{ commitment.source.color }};">
-      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <div>
-          <p class="small text-secondary mb-1">{{ commitment.source.name }} · One-time</p>
-          <h2 class="h5 mb-2">{{ commitment.title }}</h2>
-          {% if commitment.has_conflict %}
-            <p class="mb-2"><span class="badge text-bg-warning">Overlaps another commitment</span></p>
-          {% endif %}
-          <p class="mb-0 text-secondary">
-            <time datetime="{{ commitment.starts_at|date:'c' }}">{{ commitment.starts_at|date:'D j M Y, H:i' }}</time>
-            → <time datetime="{{ commitment.ends_at|date:'c' }}">{{ commitment.ends_at|date:'D j M Y, H:i' }}</time>
-          </p>
+  <div class="commitment-list">
+    {% for commitment in commitments %}
+      <article class="commitment-row">
+        <div class="commitment-date" aria-hidden="true"><span>{{ commitment.starts_at|date:'D' }}</span><strong>{{ commitment.starts_at|date:'j' }}</strong><small>{{ commitment.starts_at|date:'M' }}</small></div>
+        <div class="commitment-row-content">
+          <p class="commitment-category"><span class="source-dot" style="background-color: {{ commitment.source.color }};" aria-hidden="true"></span>{{ commitment.source.name }}<span>One-time</span></p>
+          <h2>{{ commitment.title }}</h2>
+          <p class="commitment-times"><time datetime="{{ commitment.starts_at|date:'c' }}">{{ commitment.starts_at|date:'D j M Y, H:i' }}</time><span class="time-separator">{% include 'components/icon.html' with name='arrow' %}<span class="visually-hidden">until</span></span><time datetime="{{ commitment.ends_at|date:'c' }}">{{ commitment.ends_at|date:'D j M Y, H:i' }}</time></p>
+          {% if commitment.has_conflict %}<p class="list-conflict">{% include 'components/icon.html' with name='warning' %}Overlaps another commitment</p>{% endif %}
         </div>
-        <div class="d-flex gap-2">
-          <a class="btn btn-outline-secondary btn-sm" href="{% url 'scheduling:commitment_update' commitment.pk %}" aria-label="Edit {{ commitment.title }}">Edit</a>
-          <a class="btn btn-outline-danger btn-sm" href="{% url 'scheduling:commitment_delete' commitment.pk %}" aria-label="Delete {{ commitment.title }}">Delete</a>
-        </div>
-      </div>
-    </article>
-  {% empty %}
-    <section class="card border-0 shadow-sm p-4 p-sm-5" aria-labelledby="empty-heading">
-      <h2 class="h4" id="empty-heading">Start with one part of your week</h2>
-      {% if sources %}
-        <p class="text-secondary">Add a class, work shift, or personal commitment.</p>
-        <a class="btn btn-primary align-self-start" href="{% url 'scheduling:commitment_create' %}">Add your first commitment</a>
-      {% else %}
-        <p class="text-secondary">First, give your commitments a source and color, such as Classes, Job A, or Personal.</p>
-        <a class="btn btn-primary align-self-start" href="{% url 'scheduling:source_create' %}">Add your first source</a>
-      {% endif %}
-    </section>
-  {% endfor %}
+        <div class="commitment-actions"><a class="btn btn-outline-secondary btn-sm" href="{% url 'scheduling:commitment_update' commitment.pk %}" aria-label="Edit {{ commitment.title }}">{% include 'components/icon.html' with name='edit' %}Edit</a><a class="btn btn-outline-danger btn-sm" href="{% url 'scheduling:commitment_delete' commitment.pk %}" aria-label="Delete {{ commitment.title }}">{% include 'components/icon.html' with name='trash' %}Delete</a></div>
+      </article>
+    {% empty %}
+      <section class="empty-state" aria-labelledby="empty-heading">
+        {% include 'components/icon.html' with name='calendar' %}
+        <h2 id="empty-heading">Start with one part of your week</h2>
+        {% if sources %}<p>Add a class, work shift, or personal commitment.</p><a class="btn btn-primary" href="{% url 'scheduling:commitment_create' %}">Add your first commitment</a>{% else %}<p>First, give your commitments a source and color, such as Classes, Job A, or Personal.</p><a class="btn btn-primary" href="{% url 'scheduling:source_create' %}">Add your first source</a>{% endif %}
+      </section>
+    {% endfor %}
+  </div>
 {% endblock %}

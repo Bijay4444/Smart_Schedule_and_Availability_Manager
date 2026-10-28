@@ -1,16 +1,23 @@
 {% extends 'base.html' %}
 
 {% block title %}Delete commitment | Smart Schedule{% endblock %}
+{% block page_name %}Delete commitment{% endblock %}
 
 {% block content %}
-  <section class="card border-0 shadow-sm p-4 p-sm-5 editor-card mx-auto" aria-labelledby="delete-heading">
-    <h1 class="h3" id="delete-heading">Delete this commitment?</h1>
-    <p class="mb-1"><strong>{{ object.title }}</strong> · {{ object.source.name }}</p>
-    <p class="text-secondary">{{ object.starts_at|date:'D j M Y, H:i' }} → {{ object.ends_at|date:'D j M Y, H:i' }}</p>
-    <form method="post" class="d-flex gap-2">
-      {% csrf_token %}
-      <button class="btn btn-danger" type="submit">Delete commitment</button>
-      <a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">Keep commitment</a>
-    </form>
-  </section>
+  <div class="editor-layout">
+    <a class="back-link" href="{% url 'scheduling:commitment_list' %}">{% include 'components/icon.html' with name='left' %}Back to commitments</a>
+    <section class="editor-surface delete-surface" aria-labelledby="delete-heading">
+      <div class="delete-symbol">{% include 'components/icon.html' with name='trash' %}</div>
+      <header class="editor-heading"><h1 id="delete-heading">Delete this commitment?</h1><p class="page-description">This removes the commitment from your schedule.</p></header>
+      <div class="delete-summary">
+        <strong>{{ object.title }}</strong><span>{{ object.source.name }}</span>
+        <p>{{ object.starts_at|date:'D j M Y, H:i' }} – {{ object.ends_at|date:'D j M Y, H:i' }}</p>
+      </div>
+      <form method="post" class="form-actions">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Delete commitment</button>
+        <a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">Keep commitment</a>
+      </form>
+    </section>
+  </div>
 {% endblock %}

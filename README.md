@@ -2,12 +2,15 @@
 
 A Django application for people balancing classes, multiple jobs, and personal
 commitments. It currently includes login/logout, private commitment sources,
-and one-time commitment creation, editing, and deletion, including overnight
-entries and conflict warnings.
+one-time commitment management, a recurring scheduling engine, and a visual
+weekly calendar with an agenda layout on phones.
 
 ## Current workflow
 
-Open <http://127.0.0.1:8000/commitments/> after signing in:
+Open <http://127.0.0.1:8000/week/> after signing in. Navigate weeks, select a day
+to add a one-time commitment, or select a block for its full details. Overnight
+commitments appear on both dates. The list remains available at
+<http://127.0.0.1:8000/commitments/>:
 
 1. Add a source such as Classes, Job A, or Personal and choose its color.
 2. Add a one-time commitment with explicit start and end dates/times.
@@ -18,7 +21,7 @@ Open <http://127.0.0.1:8000/commitments/> after signing in:
 
 Times use Halifax time. Forms reject ambiguous/nonexistent daylight-saving
 clock times. Recurring forms, working windows, availability calculation, and
-the weekly calendar are upcoming increments in the
+sharing are upcoming increments in the
 [development checklist](docs/development_checklist.md).
 
 The recurring database foundation is now installed: stable series, dated
@@ -31,6 +34,14 @@ Source-management buttons are not yet provided. See the
 [database design](docs/database_design.md) for the approved schema and boundaries.
 The [recurrence service guide](docs/recurrence_services.md) explains the backend
 interfaces, time calculations, and tests.
+The [calendar guide](docs/weekly_calendar.md) explains the frontend and its
+desktop/mobile verification. Calendar overlap indicators include recurring
+commitments; integrating those into save warnings remains on the checklist.
+
+All existing application templates now share the same navigation, self-hosted
+typography, forms, controls, and responsive patterns. The
+[frontend style guide](docs/frontend_style.md) records the Impeccable installation
+and how to extend the shared interface.
 
 ## What is installed
 

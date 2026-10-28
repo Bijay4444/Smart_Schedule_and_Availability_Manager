@@ -1,28 +1,20 @@
 {% extends 'base.html' %}
 
 {% block title %}Add source | Smart Schedule{% endblock %}
+{% block page_name %}Add source{% endblock %}
 
 {% block content %}
-  <section class="card border-0 shadow-sm p-4 p-sm-5 editor-card mx-auto" aria-labelledby="source-heading">
-    <p class="eyebrow mb-2">Give each part of your week a color</p>
-    <h1 class="h3" id="source-heading">Add a source</h1>
-    <p class="text-secondary">A source groups related commitments, such as Classes, Job A, or Personal.</p>
-    <form method="post">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
-      {% endif %}
-      {% for field in form %}
-        <div class="mb-3">
-          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
-        </div>
-      {% endfor %}
-      <div class="d-flex gap-2 mt-4">
-        <button class="btn btn-primary" type="submit">Add source</button>
-        <a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">Cancel</a>
-      </div>
-    </form>
-  </section>
+  <div class="editor-layout">
+    <a class="back-link" href="{% url 'scheduling:commitment_list' %}">{% include 'components/icon.html' with name='left' %}Back to commitments</a>
+    <section class="editor-surface" aria-labelledby="source-heading">
+      <header class="editor-heading"><h1 id="source-heading">Add a source</h1><p class="page-description">A source groups related commitments, such as Classes, Job A, or Personal.</p></header>
+      <form method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}{% include 'components/form_field.html' %}{% endfor %}
+        <div class="form-actions"><button class="btn btn-primary" type="submit">Add source</button><a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">Cancel</a></div>
+      </form>
+    </section>
+    <p class="editor-note">{% include 'components/icon.html' with name='tag' %}Give each part of your week a name and a color.</p>
+  </div>
 {% endblock %}
