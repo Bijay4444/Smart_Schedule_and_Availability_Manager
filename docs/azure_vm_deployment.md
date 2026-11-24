@@ -4,6 +4,9 @@
 HTTPS and authenticated scheduling checks passed; the initial database backup
 has been downloaded off the VM. See [deployment status](azure_vm_status.md).
 
+Normal updates now use the [GitHub Actions CI/CD pipeline](ci_cd.md). The manual
+build/upload instructions below remain available for supervised recovery/setup.
+
 One Ubuntu VM runs Django, PostgreSQL 17, and Caddy using Docker Compose.
 Only Caddy publishes application ports (80/443); PostgreSQL and Django have no
 host port. SSH uses a private key and an owner IP allowlist. The managed 32 GiB

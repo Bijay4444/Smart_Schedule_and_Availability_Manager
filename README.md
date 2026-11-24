@@ -1,5 +1,7 @@
 # Smart Schedule and Availability Manager
 
+[![Test and deploy](https://github.com/Bijay4444/Smart_Schedule_and_Availability_Manager/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Bijay4444/Smart_Schedule_and_Availability_Manager/actions/workflows/ci-cd.yml)
+
 A Django application for people balancing classes, multiple jobs, and personal
 commitments. It currently includes login/logout, private commitment sources,
 one-time commitment management, a recurring scheduling engine, and a visual
@@ -14,6 +16,10 @@ edits. Keep personal information in your separate account. See the
 [deployment status](docs/azure_vm_status.md).
 
 ## Current workflow
+
+Pull requests run PostgreSQL tests and a Docker deployment rehearsal. Successful
+pushes to `main` automatically deploy the tested image to Azure, with a database
+backup and verified migrations. See the [CI/CD guide](docs/ci_cd.md).
 
 Open <http://127.0.0.1:8000/week/> after signing in. Navigate weeks, select a day
 to add a one-time commitment, or select a block for its full details. Overnight
