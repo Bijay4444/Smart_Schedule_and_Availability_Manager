@@ -1,3 +1,18 @@
+## Project implementation
+
+The project keeps the HackSoft folder structure below. Shared settings and
+integration imports live in `config/django/base.py`; profiles override defaults.
+The production preparation pass gives local, production, and test profiles
+distinct behavior, described in [deployment.md](deployment.md).
+
+One deliberate adaptation to the reference: only local/test profiles read the
+project `.env`, before importing the base. Production reads process environment
+variables only, preventing a development file from supplying debug flags or
+database credentials to a deployment. Production startup validates required
+values. Optional integration settings still belong in the shared base.
+
+The following material is the original settings-pattern reference.
+
 Settings
 When it comes to Django settings, we tend to follow the folder structure from cookiecutter-django, with few adjustments:
 

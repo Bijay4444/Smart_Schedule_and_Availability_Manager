@@ -2,7 +2,7 @@
 
 Open `/week/` after signing in, or choose **Your week** in the navigation.
 The homepage also links to it. `?week=2026-10-26` selects a week; any valid date
-normalizes to its Monday. Previous/next and Today links work without JavaScript.
+normalizes to its Monday. Previous/next and This week links work without JavaScript.
 The display zone is America/Halifax.
 
 The calendar shares the application's navigation, typography, and controls with
@@ -11,9 +11,19 @@ Impeccable-guided style pass.
 
 ## What is implemented
 
-- Monday–Sunday desktop time grid with stable source colors and text labels.
-- A stacked daily agenda on phones; tablets can scroll the grid horizontally
-  inside its frame without overflowing the whole page.
+- A compact Monday–Sunday **Week board** by default, with stable source colors,
+  explicit times, wrapping titles, and daily commitment counts. Commitments stack
+  in time order; empty hours occupy no space and cards have no internal scroll.
+- A **Time grid** option (`?view=timeline`) retains proportional duration and
+  hourly comparisons. Switching layouts preserves the selected week, and
+  previous/next/This week navigation preserves the selected layout.
+- The board uses dated rows with two commitment columns at tablet/narrow desktop
+  widths, and a single-column daily agenda on phones. The optional time grid
+  scrolls inside its frame on desktop/tablets and uses a daily agenda on phones.
+- A weekly commitment/overlap summary and direct work-availability link. Short,
+  overlapping commitments remain full-width in the board; the time grid retains
+  side-by-side lanes. Dense weeks still take vertical space rather than hiding
+  commitments behind a fixed-height calendar.
 - One-time commitments, regular recurring occurrences, and moved replacements.
   Cancellations and ended-series occurrences follow the recurrence service.
 - Overnight portions on both dates and in both displayed weeks when applicable.
@@ -27,11 +37,16 @@ Impeccable-guided style pass.
 - Reduced-motion support, keyboard links/buttons, labelled calendar sections,
   and a skip-to-content link.
 
-Recurring editing forms and conflict-save integration remain separate work.
-The existing save warning checks one-time commitments; the calendar's read-only
+Calendar details now link to reviewed recurring editing and one-off changes,
+and review notices link to correction/cancellation. See
+[recurring_workflow.md](recurring_workflow.md). The one-time save warning checks both one-time and recurring
+commitments; see [conflict_services.md](conflict_services.md). The calendar's read-only
 overlap indicators include recurring commitments too. This calendar does not
 calculate work availability or describe empty space as available for work.
-Working windows, availability calculation, and sharing remain on the checklist.
+Working-window [configuration screens](working_window_screens.md) are implemented.
+The [availability screen](availability_screen.md) now provides visual available
+hours and employer-facing copy text; its calendar link preserves the selected
+week. It uses the [availability calculation backend](availability_services.md).
 
 ## How the frontend fits Django
 
@@ -49,17 +64,48 @@ ambiguous labels in details; compact blocks omit repeated zone labels when both
 endpoints use the same zone. Invalid resolved intervals appear as review issues instead of
 being presented as an empty, complete day.
 
-CSS switches the same semantic day/block markup between the desktop timeline
-and phone agenda. The small `static/js/calendar.js` script only scrolls the
-desktop viewport toward the earliest commitment, with a daytime default. Entry,
-navigation, details, and all schedule content work without it. No React, Node
-build, new application dependency, or migration was introduced.
+CSS switches the same semantic day/block markup between the compact board,
+optional desktop timeline, and phone agenda. The view only selects a known
+layout from the query string; scheduling calculations remain in the presentation
+service. Unknown layout values fall back to the board. Hour labels are rendered
+only for the time grid. The small `static/js/calendar.js` script only scrolls
+that optional desktop timeline toward the earliest commitment, with a daytime
+default. Entry, navigation, details, layout selection, and all schedule content
+work without it. No React, Node build, new application dependency, or migration
+was introduced. Edit/create return links retain the week and return to the
+default board.
+
+The [calendar research](weekly_calendar_research.md) compares this approach with
+FullCalendar and Django date-picker widgets. A new library is unnecessary for
+removing empty-hour rows; this change retains the existing recurrence, overnight,
+conflict, ownership, and clock-change behavior.
 
 The browser-created temporary sample account and all its records are removed
 after verification. Screenshots contain fictional sample data rather than a
 user's private schedule.
 
 ## Verification
+
+### Compact board polish (22 November 2026)
+
+- 91 PostgreSQL tests pass across weekly calendar, one-time views, and recurring
+  workflows. Four additional calendar tests cover the default board without hour
+  rows, optional grid/navigation, unknown layout fallback, and short/conflicting/
+  overnight commitments.
+- Chromium checks passed at 1440, 1280, 1024, 820, 390, and 320px widths with no
+  page overflow or scrolling inside board cards. At 1440 × 1000, the demo week's
+  13 commitments fit together in the viewport (board height about 540px).
+- Details, Escape dismissal, recurring edit links, layout switching, previous/
+  next week, selected-date form prefill, and no-JavaScript layout/details passed.
+- Desktop, tablet, and phone captures were visually inspected. Browser tooling
+  and screenshots stay under `/tmp`; no project browser dependency was added.
+- Empty weeks, clock-review notices, 23/25-hour dates, long unbroken labels, and
+  reduced-motion rendering passed browser checks. Checked board labels and
+  colored-card text had a minimum computed contrast ratio of 5.38:1.
+- The Impeccable scan reported only a font warning for the established Instrument
+  Sans family, which was retained to match the application.
+
+### Original calendar implementation
 
 - 189 PostgreSQL tests pass, including 19 new calendar tests for ownership,
   malformed dates, recurrence, overnight boundaries, overlap lanes, DST,

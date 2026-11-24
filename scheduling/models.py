@@ -283,3 +283,106 @@ class OccurrenceException(models.Model):
                     errors["replacement_source"] = "Choose a source belonging to the series owner."
         if errors:
             raise ValidationError(errors)
+
+
+class WorkingScheduleRevision(models.Model):
+    """A person's weekly willingness to work during a half-open date period."""
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    time_zone = models.CharField(max_length=64, validators=[validate_time_zone])
+    effective_from = models.DateField()
+    effective_until = models.DateField(null=True, blank=True)
+    dst_gap_policy = models.CharField(
+        max_length=20, choices=SeriesRevision.GapPolicy,
+        default=SeriesRevision.GapPolicy.SHIFT_FORWARD,
+    )
+    dst_fold_policy = models.CharField(
+        max_length=20, choices=SeriesRevision.FoldPolicy,
+        default=SeriesRevision.FoldPolicy.FIRST,
+    )
+
+    class Meta:
+        ordering = ["effective_from", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(effective_until__isnull=True)
+                | models.Q(effective_until__gt=models.F("effective_from")),
+                name="working_revision_positive_period",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(dst_gap_policy="shift_forward"),
+                name="working_revision_valid_gap_policy",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(dst_fold_policy="first"),
+                name="working_revision_valid_fold_policy",
+            ),
+            ExclusionConstraint(
+                name="working_revision_periods_do_not_overlap",
+                expressions=[
+                    ("owner", RangeOperators.EQUAL),
+                    (models.Func(
+                        "effective_from", "effective_until", models.Value("[)"),
+                        function="DATERANGE", output_field=DateRangeField(),
+                    ), RangeOperators.OVERLAPS),
+                ],
+            ),
+        ]
+
+
+class WorkingWindow(models.Model):
+    revision = models.ForeignKey(
+        WorkingScheduleRevision, on_delete=models.CASCADE, related_name="windows"
+    )
+    weekday = models.PositiveSmallIntegerField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    end_day_offset = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["weekday", "start_time", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(weekday__gte=0, weekday__lte=6),
+                name="working_window_weekday_in_range",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(end_day_offset__in=[0, 1]),
+                name="working_window_valid_day_offset",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(end_day_offset=1)
+                | models.Q(end_time__gt=models.F("start_time")),
+                name="working_window_positive_local_interval",
+            ),
+            models.UniqueConstraint(
+                fields=["revision", "weekday", "start_time", "end_time", "end_day_offset"],
+                name="working_window_unique_rule",
+            ),
+        ]
+
+
+class WorkingDateOverride(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    local_date = models.DateField()
+    time_zone = models.CharField(max_length=64, validators=[validate_time_zone])
+
+    class Meta:
+        constraints = [models.UniqueConstraint(
+            fields=["owner", "local_date"], name="working_override_unique_date"
+        )]
+
+
+class OverrideInterval(models.Model):
+    override = models.ForeignKey(
+        WorkingDateOverride, on_delete=models.CASCADE, related_name="intervals"
+    )
+    starts_at = models.DateTimeField()
+    ends_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ["starts_at", "pk"]
+        constraints = [models.CheckConstraint(
+            condition=models.Q(ends_at__gt=models.F("starts_at")),
+            name="working_override_positive_interval",
+        )]

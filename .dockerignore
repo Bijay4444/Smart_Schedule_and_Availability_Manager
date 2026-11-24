@@ -1,0 +1,25 @@
+# An allowlist keeps .env files, Git history, local tooling, tests, documents,
+# presentation artifacts, and host virtual environments out of the build context.
+**
+!pyproject.toml
+!uv.lock
+!manage.py
+!accounts/
+!accounts/**
+!config/
+!config/**
+!core/
+!core/**
+!scheduling/
+!scheduling/**
+!templates/
+!templates/**
+!static/
+!static/**
+!docker/
+!docker/healthcheck.py
+**/__pycache__/
+**/*.py[cod]
+**/.env*
+**/*.pem
+**/*.key

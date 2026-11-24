@@ -19,8 +19,11 @@
           <nav class="primary-nav" aria-label="Main navigation">
             <a href="{% url 'home' %}"{% if route == 'home' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='home' %}<span>Overview</span></a>
             <a href="{% url 'scheduling:week' %}"{% if route == 'week' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='calendar' %}<span>Your week</span></a>
-            <a href="{% url 'scheduling:commitment_list' %}"{% if route == 'commitment_list' or route == 'commitment_create' or route == 'commitment_update' or route == 'commitment_delete' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='list' %}<span>Commitments</span></a>
+            <a href="{% url 'scheduling:availability' %}"{% if route == 'availability' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='clock' %}<span>Availability</span></a>
+            <a href="{% url 'scheduling:shift_check' %}"{% if route == 'shift_check' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='clock' %}<span>Check a shift</span></a>
+            <a href="{% url 'scheduling:commitment_list' %}"{% if route == 'commitment_list' or route == 'commitment_create' or route == 'commitment_update' or route == 'commitment_delete' or route|slice:':7' == 'series_' or route|slice:':11' == 'occurrence_' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='list' %}<span>Commitments</span></a>
             <a href="{% url 'scheduling:source_create' %}"{% if route == 'source_create' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='tag' %}<span>Add source</span></a>
+            <a href="{% url 'scheduling:working_windows' %}"{% if route|slice:':8' == 'working_' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='clock' %}<span>Working windows</span></a>
           </nav>
           <div class="sidebar-note">
             {% include 'components/icon.html' with name='lock' %}

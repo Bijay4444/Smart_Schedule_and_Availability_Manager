@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block title %}Check a shift | Smart Schedule{% endblock %}
+{% block page_name %}Check a shift{% endblock %}
+{% block content %}
+<div class="editor-layout">
+  <a class="back-link" href="{% url 'scheduling:availability' %}{% if result %}?week={{ result.date|date:'Y-m-d' }}{% endif %}">{% include 'components/icon.html' with name='left' %}Back to availability</a>
+  <section class="editor-surface" aria-labelledby="shift-heading">
+    <header class="editor-heading"><h1 id="shift-heading">Can you work this shift?</h1><p class="page-description">Check an offer against your working windows and commitments. Checking leaves your saved schedule unchanged.</p></header>
+    <form method="post" action="{% url 'scheduling:shift_check' %}#shift-result-heading">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}{% if field.name == 'starts_at' or field.name == 'ends_at' %}{% include 'components/form_field.html' %}{% endif %}{% endfor %}
+      <details class="shift-clock-options"{% if form.second_start.value or form.second_end.value or form.second_start.errors or form.second_end.errors %} open{% endif %}>
+        <summary>Clock-change options</summary>
+        <p class="form-text">Halifax time (America/Halifax). Missing times move forward by the clock change. Repeated times use the first occurrence unless you choose the second below.</p>
+        {% for field in form %}{% if field.name == 'second_start' or field.name == 'second_end' %}<div class="form-check">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.errors %}<div class="field-error" role="alert">{{ field.errors }}</div>{% endif %}</div>{% endif %}{% endfor %}
+      </details>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">{% include 'components/icon.html' with name='clock' %}Check shift</button><a class="btn btn-outline-secondary" href="{% url 'scheduling:shift_check' %}">Clear</a></div>
+    </form>
+    {% if form.clock_notes %}<aside class="alert alert-info shift-clock-notes"><h2 class="h6">Clock times used</h2><ul class="mb-0">{% for note in form.clock_notes %}<li>{{ note }}</li>{% endfor %}</ul></aside>{% endif %}
+    {% if result %}
+      {% timezone 'America/Halifax' %}
+      <section class="shift-result" aria-labelledby="shift-result-heading">
+        <h2 id="shift-result-heading" tabindex="-1">{% if result.available %}Available for this shift{% elif not result.complete %}Needs review — availability not confirmed{% else %}Not available for the full shift{% endif %}</h2>
+        <p class="shift-checked-times"><time datetime="{{ result.starts_at|date:'c' }}">{{ result.start_label }}</time> – <time datetime="{{ result.ends_at|date:'c' }}">{{ result.end_label }}</time></p>
+        {% if result.available %}<p>The entire shift fits within your working windows and overlaps no commitments.</p>{% endif %}
+        {% if not result.complete %}<p>Some schedule times could not form valid intervals. Resolve these dates, then check again. Any known conflicts and uncovered hours are listed below.</p>
+          <ul>{% for day in result.review_working %}<li><a class="text-link" href="{% url 'scheduling:working_windows' %}?date={{ day|date:'Y-m-d' }}">Review working hours · {{ day|date:'j M Y' }}</a></li>{% endfor %}{% for day in result.review_commitments %}<li><a class="text-link" href="{% url 'scheduling:week' %}?week={{ day|date:'Y-m-d' }}">Review commitments · {{ day|date:'j M Y' }}</a></li>{% endfor %}</ul>
+        {% endif %}
+        <h3>Commitment conflicts</h3>
+        <ul class="shift-interval-list">{% for item in result.conflicts %}<li><strong>{{ item.title }}</strong><span>{{ item.source }} · {{ item.start_label }} – {{ item.end_label }}</span><a class="text-link" href="{% url 'scheduling:week' %}?week={{ item.date|date:'Y-m-d' }}">View in calendar</a></li>{% empty %}<li>{% if result.complete %}No overlapping commitments.{% else %}No known overlaps; unresolved dates still need review.{% endif %}</li>{% endfor %}</ul>
+        <h3>Outside working windows</h3>
+        {% if result.review_working %}<p>These hours are not covered by resolved working windows. Correct the working hours needing review before treating this coverage as final.</p>{% endif %}
+        <ul class="shift-interval-list">{% for item in result.outside %}<li>{{ item.start_label }} – {{ item.end_label }}</li>{% empty %}<li>{% if result.review_working %}Working hours need review before coverage can be confirmed.{% else %}The entire shift is inside your working windows.{% endif %}</li>{% endfor %}</ul>
+        <a class="text-link" href="{% url 'scheduling:working_windows' %}?date={{ result.date|date:'Y-m-d' }}">Review working windows{% include 'components/icon.html' with name='right' %}</a>
+        <p class="form-text">Nothing was saved. This result reflects your current schedule; check again after making changes. Travel buffers and minimum shift lengths are not applied.</p>
+      </section>
+      {% endtimezone %}
+    {% endif %}
+  </section>
+  <p class="editor-note">All dates and times use Halifax time (America/Halifax).</p>
+</div>
+{% endblock %}

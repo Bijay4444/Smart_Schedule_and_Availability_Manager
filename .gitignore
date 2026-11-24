@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+!.env.production.example
+!.env.docker.example
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -11,3 +13,4 @@ htmlcov/
 staticfiles/
 .DS_Store
 screenshots/
+.azure-deploy/

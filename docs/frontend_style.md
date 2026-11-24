@@ -96,3 +96,78 @@ reported as proof that all CSS rules passed.
 The implementation keeps scheduling calculations in the existing service layer.
 Future screens should extend this shell and these patterns while the remaining
 backend and frontend tasks follow [the checklist](development_checklist.md).
+
+## Recurring editor extension
+
+Recurring entry/revision, ending, and one-off changes/cancellation extend the
+existing editor and row patterns. Weekdays use a labelled fieldset, and the
+following-day and repeated-hour choices use labelled native checkboxes. Review
+keeps its date range and limitation explicit. Repeated conflicts show a count
+and first example, with remaining dates in native expandable details.
+
+The live recurring journey passed at desktop, tablet, phone, and narrow-phone
+widths without page overflow or JavaScript errors. Desktop and phone review
+captures were inspected. All 333 PostgreSQL tests pass. Impeccable's manual scan
+still could not resolve the Django static tag for CSS color coverage and warned
+about the already pinned Instrument Sans family; the agreed font was retained.
+Temporary browser tooling/libraries and captures stay under `/tmp`. See
+[recurring_workflow.md](recurring_workflow.md) for service and browser evidence.
+
+## Working-window screen extension
+
+The working-window overview, time-row editor, and override restoration form
+reuse the shell, green identity, Instrument Sans, and shared form controls.
+Weekday patterns and date overrides use distinct sections; the dated preview
+explicitly shows willingness before commitments. The phone navigation scrolls
+within its own row to accommodate the new working-window link.
+
+Variable time rows use labelled fieldsets and native controls. Adding a row
+announces it and focuses the first field; the server also supports row addition
+and saving without JavaScript. All-day closure and empty weekly patterns require
+an explicit state choice. Date overrides offer following-midnight and repeated-
+hour controls, with field errors for invalid resolved intervals.
+
+All 383 PostgreSQL tests pass. Chromium checks passed 1440px, 820px, 390px, and
+320px layouts, the complete working-window workflow, and JavaScript-disabled
+forms. Desktop and phone captures were inspected. The manual Impeccable scan
+again could not resolve Django's static stylesheet tag for color coverage and
+flagged the already pinned Instrument Sans family; that font was retained.
+See [working_window_screens.md](working_window_screens.md) for evidence and limits.
+
+## Availability display and sharing
+
+The availability screen extends the existing weekly navigation and green
+identity. Seven dated rows use actual-duration bars and complete text ranges;
+the bars are hidden from assistive technology. Day-specific axes preserve
+23/25-hour dates, and repeated-hour labels distinguish ADT from AST. Phone
+layouts stack the same content without changing the calculation or hiding gaps.
+
+The sharing surface uses a readonly, selectable textarea with explicit clipboard
+copy and live status feedback. Missing or denied clipboard access selects the
+text without claiming success. The button stays hidden without JavaScript;
+the server-rendered text and navigation remain functional. Incomplete dates
+retain an explicit review state, including a draft notice in the copied text.
+
+All 411 PostgreSQL tests pass. Chromium checks passed actual copying, privacy,
+fallbacks, refreshed results, incomplete/DST/empty states, no-JavaScript use,
+and 1440px/820px/390px/320px layouts without page overflow or JavaScript errors.
+Rendered desktop, phone, and incomplete-state captures were inspected. The
+manual detector retained its known Django static-tag color-coverage limitation
+and existing pinned-font warning. See [availability_screen.md](availability_screen.md).
+
+## Proposed-shift checker
+
+The shift checker extends the existing editor surface and shared form controls.
+Its two native date/time controls stay in one column on desktop and phones.
+Its answer follows the inputs with separate commitment conflicts and uncovered
+hours, so users can distinguish the reasons an offer does not fit. Incomplete
+calculations use a review heading and dated corrective links. Native expandable
+clock options expose second-hour choices without adding JavaScript. Result
+labels include the date and zone and preserve seconds when needed.
+
+The answer's fragment target supports navigation after a form submission;
+validation errors retain inputs, and Clear returns to the empty form. Long
+private commitment titles wrap inside the existing mobile editor. The shell,
+font, palette, and tokens retain the incumbent visual identity. All 451 tests
+pass; browser evidence and architecture are recorded in
+[proposed_shift_screen.md](proposed_shift_screen.md).

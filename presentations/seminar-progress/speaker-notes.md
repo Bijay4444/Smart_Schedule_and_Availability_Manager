@@ -34,5 +34,5 @@ Next, I will connect recurring entry and conflict checks, then implement working
 - The availability example is planned behavior, not a working feature.
 - Recurring backend services exist; recurring entry forms and combined save-conflict checks remain upcoming.
 - The 189-test number is the latest recorded application verification in the project docs, not a fresh test run for this deck.
-- Speaker notes (N) appear on the current screen. Close them before projecting; use this script on a second device if needed.
+- Press **P** or **N** to open a separate presenter window with notes and synced slide controls. Share only the original slides window or tab; whole-screen sharing would also reveal the presenter window. For a projector, use an extended display rather than mirroring.
 - After editing slide text, check that it still fits. The accompanying script and PDF need updating separately.

@@ -19,10 +19,17 @@
           {% endfor %}
         </div>
         <p class="form-related-link"><a class="text-link" href="{% url 'scheduling:source_create' %}">{% include 'components/icon.html' with name='plus' %}Need another source? Add one first.</a></p>
-        {% if conflicts %}
+        {% if conflicts or conflict_issues %}
           <div class="alert alert-warning conflict-warning" role="alert">
+            {% if conflicts %}
             <h2>{% include 'components/icon.html' with name='warning' %}This overlaps your existing commitments</h2>
             <ul>{% for conflict in conflicts %}<li><strong>{{ conflict.title }}</strong><br>{{ conflict.starts_at|date:'D j M, H:i' }} – {{ conflict.ends_at|date:'D j M, H:i' }}</li>{% endfor %}</ul>
+            {% endif %}
+            {% if conflict_issues %}
+              <h2>{% include 'components/icon.html' with name='warning' %}Conflict check needs review</h2>
+              <p>Some recurring commitments have invalid times after a clock change. Conflicts on these dates cannot be checked completely. You can save this commitment after reviewing this warning; availability on the affected dates will remain incomplete.</p>
+              <ul>{% for issue in conflict_issues %}<li><strong>{{ issue.title }}</strong> — {{ issue.original_start_date|date:'D j M Y' }}<br>{{ issue.message }}</li>{% endfor %}</ul>
+            {% endif %}
             <div class="form-check">{{ form.confirm_conflicts }}<label class="form-check-label" for="{{ form.confirm_conflicts.id_for_label }}">{{ form.confirm_conflicts.label }}</label></div>
           </div>
         {% endif %}

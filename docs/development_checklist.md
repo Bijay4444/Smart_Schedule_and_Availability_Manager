@@ -60,7 +60,7 @@ for the distinction between stored instants and local form/display times.
 ## 3. Weekly recurrence
 
 Database design was confirmed in DB18. The storage foundation and recurring
-services are complete; conflict integration and the frontend remain in progress.
+services, recurring conflict review, and recurring entry/editing forms are complete.
 
 - [x] Source archival state and protected references preserve existing data.
 - [x] Recurring series, dated revisions, weekdays, and exception tables.
@@ -75,13 +75,18 @@ services are complete; conflict integration and the frontend remain in progress.
 - [x] Future-effective schedule changes preserve earlier weeks.
 - [x] Support one-off reschedules and cancellations; explicit one-off changes
   survive general future-effective schedule changes.
-- [ ] Conflict checks include one-time and recurring commitments.
+- [x] One-time save warnings and persistent list indicators include both
+  one-time and recurring commitments, with explicit acknowledgement of conflicts
+  or unresolved recurring clock-review dates.
+- [x] Conflict preflight for recurring creation, future edits, and replacements
+  before exposing their write forms.
 - [x] Tests for date limits, touching boundaries, DST, and recurring overnight shifts.
 - [x] Automatic daylight-saving resolution with metadata and review issues;
   shift missing times forward and choose the first repeated time.
-- [ ] Recurring create/edit/end and one-off change forms with ownership checks.
-- [ ] Display DST resolution and review messages with one-off override controls.
-- [ ] An easy "ends next day" entry option.
+- [x] Recurring create/edit/end and one-off change forms with ownership checks.
+- [x] Display DST resolution and review messages with one-off override controls.
+- [x] An easy "ends the following day" option for recurring rules.
+- [ ] An easy "ends next day" option on the one-time entry form (explicit dates work).
 
 Foundation verification: 103 tests passed on PostgreSQL, including a migration
 from the legacy schema and competing revision inserts on separate connections.
@@ -100,15 +105,78 @@ dates, and bounded query counts. No migration or new dependency was needed.
 See [recurrence_services.md](recurrence_services.md) for interfaces, design
 reasoning, and the remaining conflict/frontend integration boundary.
 
-## 4. Working windows and availability
+One-time conflict integration now reuses generated occurrences, including
+archived sources, revisions, and moved/cancelled exceptions. Long candidates
+are checked in bounded chunks. List checks batch nearby intervals and retain
+incomplete-review indicators. A common owner lock serializes one-time,
+recurring, and working-schedule writes, preventing simultaneous one-time saves
+from both missing a conflict. No new migration or dependency was added.
+See [conflict_services.md](conflict_services.md) for the implementation,
+tests, and remaining recurring-write preflight boundary.
 
-- [ ] Weekly working windows, multiple per weekday, and overnight windows.
-- [ ] Effective dates preserve earlier working windows; support date-specific
+Conflict-integration verification: all 291 PostgreSQL tests pass, including 30
+new tests. Django's system check, migration-drift check, and whitespace check
+pass. HTTP tests verify recurring warning/confirmation, rejected edits, retained
+badges/review notices, and privacy. Separate-connection tests verify competing
+one-time saves and the common lock with uncommitted recurring creation. The
+temporary test cluster was stopped after verification; application data remains
+unchanged.
+
+Recurring workflow now adds a signed review before creation, future edits, or
+one-off replacement saves. The user confirmed a visible 12-month preview for
+open-ended series; final included overnight occurrences retain their full
+duration. Matching reviews are recalculated under the owner lock; staged changes
+roll back on review. Calendar details/review notices link to occurrence changes
+and cancellation. See [recurring_workflow.md](recurring_workflow.md) for the
+interfaces, token freshness, history preservation, and frontend journey.
+
+Recurring-workflow verification: all 333 tests pass on isolated PostgreSQL,
+including 42 new tests. System, migration-drift, and whitespace checks pass.
+Chromium passed the full recurring create/review/save, future-edit, one-off
+reschedule/cancel, end, and selected-week return flow. Desktop, tablet, phone,
+and narrow-phone captures passed overflow checks; desktop/phone review captures
+were inspected. Repeated overlap warnings group their dates without losing
+the complete signed result. The application database and existing data remain
+unchanged. Temporary browser tooling and libraries are outside the repository.
+
+## 4. Working windows and availability — backend and configuration screens complete
+
+- [x] Weekly working windows, multiple per weekday, and overnight windows.
+- [x] Effective dates preserve earlier working windows; support date-specific
   working availability replacing the entire local date, including overnight carry-in.
-- [ ] Merge occupied intervals and subtract them from working windows.
-- [ ] No windows means no availability; retain all positive-length gaps.
-- [ ] Proposed-shift service checks both window coverage and conflicts without saving.
-- [ ] Tests cover the acceptance examples in the project specification.
+- [x] Merge occupied intervals and subtract them from working windows.
+- [x] No windows means no availability; retain all positive-length gaps.
+- [x] Proposed-shift service checks both window coverage and conflicts without saving.
+- [x] Tests cover the acceptance examples in the project specification.
+- [x] Weekly working-window configuration with multiple/overnight rows and effective dates.
+- [x] Full-date override creation/editing, explicit all-day closure, and confirmed restoration.
+- [x] Private dated window preview, DST choices/review links, and history display.
+- [x] Add/remove rows, including adding and saving without JavaScript.
+
+The backend adds working revisions/windows and full-date overrides in migration
+0004. Reads include recurring exceptions and archived-source commitments.
+Invalid DST intervals withhold affected dates and expose review metadata;
+working overrides can resolve working-rule issues. Concurrent writes serialize
+on the owner row, with PostgreSQL revision exclusions as additional protection.
+See [availability_services.md](availability_services.md) for interfaces,
+calculation reasoning, and verification. Working-window forms and availability
+display/sharing are implemented. Migration 0004 was tested in temporary
+PostgreSQL, and the user subsequently reported applying the application migration.
+
+Verification: all 261 tests pass on isolated PostgreSQL 18, including 72 new
+working-availability/schema/migration tests and the previous 189 tests. Django's
+system check, migration-drift check, and whitespace check pass. The application
+database was not changed, and no new dependency was added.
+
+Working-screen verification: all 383 PostgreSQL tests pass, including 50 new
+screen/service tests. System, migration-drift, and whitespace checks pass.
+Chromium passed multi-window/overnight entry, dynamic row addition/removal,
+future-effective editing/history, date closure/edit/restoration, DST second-hour
+choices, invalid clock input, and no-JavaScript add/save. Desktop, tablet, phone,
+and narrow-phone layouts passed overflow checks; desktop/phone captures were
+inspected. No dependency, migration, or application-data change was added.
+See [working_window_screens.md](working_window_screens.md) for the implementation
+and the existing migration requirement.
 
 ## 5. Weekly frontend and sharing
 
@@ -118,7 +186,10 @@ reasoning, and the remaining conflict/frontend integration boundary.
 - [x] Full commitment details with one-time editing from the calendar.
 - [x] Calendar indicators for visible one-time and recurring overlaps.
 - [x] Show DST choices and unresolved interval review issues.
-- [ ] Display work availability and copy employer-facing text without private details.
+- [x] Display work availability and copy employer-facing text without private details.
+- [x] Explicit incomplete/draft text, clipboard-denial fallback, and selectable text without JavaScript.
+- [x] Read-only proposed-shift screen, separate conflicts/outside-window results,
+  unresolved-date review links, overnight intervals, and explicit DST choices.
 - [x] Phone agenda layout, date validation, and reduced-motion support.
 - [x] Subtle calendar entrance and hover transitions respecting reduced motion.
 - [x] Install Impeccable and apply shared styling to every existing app template:
@@ -140,13 +211,43 @@ were checked in the browser. Impeccable's source scan had incomplete CSS coverag
 because of Django static tags; see [frontend_style.md](frontend_style.md) for the
 installation, shared patterns, and evidence.
 
+Availability-screen verification: all 411 PostgreSQL tests pass, including 28
+new presentation/HTTP tests. System, migration-drift, and whitespace checks pass.
+Chromium passed actual clipboard copy, missing/denied clipboard fallback,
+private-detail-free text, week/calendar links, refresh after schedule changes,
+incomplete/draft text, DST repeated-hour labels, empty weeks, and no-JavaScript
+navigation/text. Desktop, tablet, phone, and narrow-phone overflow checks passed;
+rendered desktop/phone/review-state captures were inspected. No dependency or
+migration was added. See [availability_screen.md](availability_screen.md).
+
+Proposed-shift screen verification: all 451 PostgreSQL tests pass, including 40
+new form/presentation/HTTP tests. System, migration-drift, and whitespace checks
+pass. Chromium checks cover available shifts, conflicts and uncovered hours,
+unresolved dates, clock choices, correction/clear, navigation, refreshed checks,
+and JavaScript-disabled forms at desktop, tablet, phone, and narrow-phone sizes.
+No dependency, migration, or application-data change was added. See
+[proposed_shift_screen.md](proposed_shift_screen.md).
+
 ## 6. Demo readiness
 
-- [ ] Prepared sample accounts, sources, working windows, and commitments.
-- [ ] Include classes, two employers, protected personal time, and an overnight shift.
+- [x] Prepared sample accounts, sources, working windows, and commitments.
+- [x] Include classes, two employers, protected personal time, and an overnight shift.
 - [ ] Verify privacy and the full accepted service-test checklist.
 - [ ] Verify the running PostgreSQL-backed app through its main user journey.
 - [ ] Rehearse the three-minute walkthrough and reserve time for transitions.
+
+Demo-seed verification: all 479 PostgreSQL tests pass, including 28 new seed
+tests. The command creates four ordinary demo accounts with main, private,
+empty, and DST/review scenarios. Tests check expected availability/conflicts,
+exceptions, future history, overnight boundaries, scope of reset, unchanged
+reruns, preserved manual passwords/data, username collisions, and rollback.
+Chromium passed all four logins, current/future calendars, the phone calendar,
+share text/short gaps, working-window pages, four proposed shifts, and separate
+private/empty/DST states. No new dependencies or migrations were added.
+The command was also run against the configured application database, loading
+the 16–22 November 2026 demo set while preserving other accounts. The final
+presentation rehearsal and its full live workflow remain separate work. See
+[demo_data.md](demo_data.md) for the feature-by-feature manual walkthrough.
 
 REST APIs, voice/LLM entry, Google Calendar integration, adaptive time zones,
 and public hosting remain follow-up work.

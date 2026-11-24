@@ -15,12 +15,14 @@
         <h2 id="overview-schedule-heading">One place for every part of your week.</h2>
         <p>See your commitments together, spot overlaps, and keep personal time in the picture.</p>
         <a class="text-link" href="{% url 'scheduling:commitment_list' %}">Manage commitments{% include 'components/icon.html' with name='arrow' %}</a>
+        <p class="overview-availability-link"><a class="text-link" href="{% url 'scheduling:availability' %}">See work availability{% include 'components/icon.html' with name='right' %}</a></p>
       </section>
       <section class="overview-start" aria-labelledby="start-heading">
         <h2 id="start-heading">Make it your schedule</h2>
         <a class="overview-step" href="{% url 'scheduling:source_create' %}">{% include 'components/icon.html' with name='tag' %}<span><strong>Add a source</strong><small>Classes, a job, or personal commitments.</small></span>{% include 'components/icon.html' with name='right' %}</a>
         <a class="overview-step" href="{% url 'scheduling:commitment_create' %}">{% include 'components/icon.html' with name='plus' %}<span><strong>Add a commitment</strong><small>Give it a date, time, and a place in your week.</small></span>{% include 'components/icon.html' with name='right' %}</a>
         <a class="overview-step" href="{% url 'scheduling:week' %}">{% include 'components/icon.html' with name='calendar' %}<span><strong>See it all together</strong><small>Open your weekly calendar.</small></span>{% include 'components/icon.html' with name='right' %}</a>
+        <a class="overview-step" href="{% url 'scheduling:working_windows' %}">{% include 'components/icon.html' with name='clock' %}<span><strong>Set working windows</strong><small>Choose when you are willing to work, before commitments.</small></span>{% include 'components/icon.html' with name='right' %}</a>
       </section>
     </div>
   </section>

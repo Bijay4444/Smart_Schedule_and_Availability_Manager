@@ -1,0 +1,73 @@
+name: smart-schedule
+
+x-app: &app
+  image: smart-schedule:local
+  build:
+    context: .
+    target: runtime
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:mode=1777
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  environment:
+    DJANGO_SETTINGS_MODULE: config.django.production
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env.docker}
+    DJANGO_DEBUG: "false"
+    DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,[::1]
+    DATABASE_URL: ""
+    PGDATABASE: ${POSTGRES_DB:-smart_schedule}
+    PGUSER: ${POSTGRES_USER:-smart_schedule}
+    PGPASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.docker}
+    PGHOST: db
+    PGPORT: "5432"
+    # Loopback-only local preview. Azure uses secure production defaults instead.
+    PGSSLMODE: disable
+    DJANGO_SECURE_SSL_REDIRECT: "false"
+    DJANGO_SESSION_COOKIE_SECURE: "false"
+    DJANGO_CSRF_COOKIE_SECURE: "false"
+    DJANGO_SECURE_HSTS_SECONDS: "0"
+    DJANGO_TRUST_X_FORWARDED_PROTO: "false"
+
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smart_schedule}
+      POSTGRES_USER: ${POSTGRES_USER:-smart_schedule}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.docker}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    command: [python, manage.py, migrate, --noinput]
+    healthcheck:
+      disable: true
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    <<: *app
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    stop_grace_period: 35s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

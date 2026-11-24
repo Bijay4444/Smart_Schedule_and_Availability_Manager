@@ -157,9 +157,11 @@ svg {
 /* === MOTION: SHORT REVEALS THAT DO NOT SLOW THE TALK === */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .38s ease,transform .38s ease}.visible .reveal{opacity:1;transform:none}.visible .reveal:nth-child(2){transition-delay:.06s}.visible .reveal:nth-child(3){transition-delay:.12s}.visible .reveal:nth-child(4){transition-delay:.18s}
 /* === PRESENTATION CONTROLS: OUTSIDE THE FIXED SLIDE CANVAS === */
-.deck-controls{display:flex;align-items:center;gap:6px;padding:7px;background:#142d28ed;color:#fff;border:1px solid #597365;border-radius:9px;font-size:13px;transition:opacity .2s;opacity:0}.deck-controls:hover,.deck-controls:focus-within,body.show-controls .deck-controls{opacity:1}.deck-controls button,.edit-toggle{border:0;background:transparent;color:inherit;padding:6px 10px;cursor:pointer;border-radius:4px}.deck-controls button:hover,.deck-controls button[aria-pressed=true]{background:#35584b}.deck-controls button:disabled{opacity:.35;cursor:default}#count{min-width:39px;text-align:center}#clock{font-variant-numeric:tabular-nums;min-width:42px}.overtime{color:#ffc299}.edit-hotzone{position:fixed;left:0;top:0;width:80px;height:80px;z-index:1001}.edit-toggle{position:fixed;left:12px;top:12px;background:#183d34;color:white;opacity:0;pointer-events:none;z-index:1002}.edit-toggle.show,.edit-toggle.active,.edit-toggle:focus-visible{opacity:1;pointer-events:auto}body.editing [data-edit]{outline:2px dashed #b4773f;outline-offset:5px;cursor:text}.notes-panel{position:fixed;z-index:1100;right:18px;top:18px;bottom:85px;width:min(500px,calc(100vw - 36px));overflow:auto;background:#f4f1e9;color:#183d34;border:1px solid #a4b79f;border-radius:8px;padding:25px;box-shadow:0 10px 40px #0005}.notes-panel h2{font-size:25px;line-height:1.25;letter-spacing:-.6px;margin:15px 0}.notes-panel p{font-size:20px;line-height:1.65}.notes-panel button{float:right;border:0;background:#dce5d5;color:#183d34;padding:5px 10px;font-size:16px;cursor:pointer}.notes-panel small{font-size:14px;color:#5d7367}#live-status{position:fixed;left:-10000px}.print-notes{display:none}
+.deck-controls{display:flex;align-items:center;gap:6px;padding:7px;background:#142d28ed;color:#fff;border:1px solid #597365;border-radius:9px;font-size:13px;transition:opacity .2s;opacity:0}.deck-controls:hover,.deck-controls:focus-within,body.show-controls .deck-controls{opacity:1}.deck-controls button,.edit-toggle{border:0;background:transparent;color:inherit;padding:6px 10px;cursor:pointer;border-radius:4px}.deck-controls button:hover,.deck-controls button[aria-pressed=true]{background:#35584b}.deck-controls button:disabled{opacity:.35;cursor:default}#count{min-width:39px;text-align:center}#clock{font-variant-numeric:tabular-nums;min-width:42px}.overtime{color:#ffc299}.edit-hotzone{position:fixed;left:0;top:0;width:80px;height:80px;z-index:1001}.edit-toggle{position:fixed;left:12px;top:12px;background:#183d34;color:white;opacity:0;pointer-events:none;z-index:1002}.edit-toggle.show,.edit-toggle.active,.edit-toggle:focus-visible{opacity:1;pointer-events:auto}body.editing [data-edit]{outline:2px dashed #b4773f;outline-offset:5px;cursor:text}#live-status{position:fixed;left:-10000px}.print-notes{display:none}
+/* === POPUP BLOCKING FEEDBACK === */
+#presenter-status{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:1200;max-width:calc(100vw - 40px);width:600px;background:#f4f1e9;color:#183d34;border:2px solid #dfab77;border-radius:8px;padding:20px;font-size:18px;line-height:1.5}
 /* === PRINT: A STATIC, WIDESCREEN BACKUP WITH NO PRESENTER UI === */
-@page{size:1920px 1080px;margin:0}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.deck-controls,.edit-toggle,.edit-hotzone,.notes-panel,#live-status{display:none!important}.reveal{opacity:1!important;transform:none!important}.slide{break-inside:avoid}body.editing [data-edit]{outline:none}.slide:last-child{break-after:auto}}
+@page{size:1920px 1080px;margin:0}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.deck-controls,.edit-toggle,.edit-hotzone,#presenter-status,#live-status{display:none!important}.reveal{opacity:1!important;transform:none!important}.slide{break-inside:avoid}body.editing [data-edit]{outline:none}.slide:last-child{break-after:auto}}
 </style></head><body>
 <!-- === SIX SPEAKER-LED SLIDES; CONTENT AND NOTES ARE SAVED TOGETHER === -->
 <div class="deck-viewport"><main class="deck-stage" id="deckStage"><section class="slide cover active visible" aria-label="1. A real scheduling problem" aria-hidden="false" data-seconds="20">
@@ -227,10 +229,10 @@ svg {
 <footer class="slide-footer"><span>Smart Schedule <span class="footer-dot">/</span> The next milestone</span><span>06 / 06</span></footer>
 <aside class="speaker-notes" hidden>Next, I will connect recurring entry and conflict checks, then implement working windows, availability calculation, and copyable employer text. After that, I plan to explore natural-language entry and Google Calendar integration. The goal is a practical answer to one question: when can I actually work?</aside>
 </section></main></div>
-<!-- === OPTIONAL PRESENTER UI; PRESS N ONLY ON A PRIVATE SCREEN === -->
-<nav class="deck-controls" aria-label="Presentation controls"><button id="previous" aria-label="Previous slide">←</button><span id="count">1 / 6</span><button id="next" aria-label="Next slide">→</button><button id="notes-toggle" aria-pressed="false" title="Speaker notes (N)">Notes</button><span id="clock" aria-label="Elapsed rehearsal time">0:00</span><button id="timer-toggle" aria-pressed="false" title="Start or pause timer (T)">Start</button><button id="timer-reset" title="Reset timer (R)">Reset</button><button id="fullscreen" title="Fullscreen (F)">⛶</button></nav>
+<!-- === SHARE THIS WINDOW; NOTES OPEN IN A SEPARATE PRESENTER WINDOW === -->
+<nav class="deck-controls" aria-label="Presentation controls"><button id="previous" aria-label="Previous slide">←</button><span id="count">1 / 6</span><button id="next" aria-label="Next slide">→</button><button id="presenter-toggle" title="Open private presenter window (P or N)">Presenter</button><span id="clock" aria-label="Elapsed rehearsal time">0:00</span><button id="timer-toggle" aria-pressed="false" title="Start or pause timer (T)">Start</button><button id="timer-reset" title="Reset timer (R)">Reset</button><button id="fullscreen" title="Fullscreen (F)">⛶</button></nav>
 <div class="edit-hotzone" aria-hidden="true"></div><button class="edit-toggle" id="editToggle" aria-pressed="false" title="Toggle text editing (E)">Edit (E)</button>
-<aside class="notes-panel" id="notes-panel" hidden aria-label="Speaker notes"><button id="notes-close" aria-label="Close speaker notes">Close</button><small id="notes-budget"></small><h2 id="notes-heading"></h2><p id="notes-copy"></p></aside>
+<p id="presenter-status" role="status" hidden></p>
 <div id="live-status" role="status" aria-live="polite"></div>
 <script>
 /* === SLIDE CONTROLLER: NAVIGATION, SCALING, TIMER, AND SPEAKER NOTES === */
@@ -240,6 +242,7 @@ class SlidePresentation {
     this.currentSlide=0; this.editing=false; this.running=false; this.elapsed=0; this.started=0;
     this.stage=document.getElementById('deckStage');
     this.storageKey='smart-schedule-seminar-v1';
+    this.presenterWindow=null;
     this.restoreEdits(); this.setupStageScale(); this.setupNavigation(); this.setupEditing();
     this.showSlide(this.indexFromHash());
     window.addEventListener('hashchange',()=>this.showSlide(this.indexFromHash()));
@@ -259,25 +262,24 @@ class SlidePresentation {
     document.getElementById('next').disabled=this.currentSlide===this.slides.length-1;
     document.getElementById('live-status').textContent=this.slides[this.currentSlide].getAttribute('aria-label');
     try {history.replaceState(null,'',`#${this.currentSlide+1}`);} catch (_) {}
-    this.updateNotes();
+    this.updatePresenter();
   }
   setupNavigation() {
     document.getElementById('previous').onclick=()=>this.showSlide(this.currentSlide-1);
     document.getElementById('next').onclick=()=>this.showSlide(this.currentSlide+1);
-    document.getElementById('notes-toggle').onclick=()=>this.toggleNotes();
-    document.getElementById('notes-close').onclick=()=>this.toggleNotes(false);
+    document.getElementById('presenter-toggle').onclick=()=>this.openPresenter();
     document.getElementById('timer-toggle').onclick=()=>this.toggleTimer();
     document.getElementById('timer-reset').onclick=()=>this.resetTimer();
     document.getElementById('fullscreen').onclick=()=>this.toggleFullscreen();
     document.addEventListener('keydown',e=>{
       const typing=e.target.isContentEditable||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName);
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&this.editing){e.preventDefault();this.download();return;}
-      if(e.key==='Escape'){if(this.editing)this.toggleEdit(false);this.toggleNotes(false);return;}
+      if(e.key==='Escape'){if(this.editing)this.toggleEdit(false);return;}
       if(typing||e.ctrlKey||e.metaKey||e.altKey)return;
-      if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)&&e.target.tagName!=='BUTTON'){e.preventDefault();this.showSlide(this.currentSlide+1);}
-      if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)&&e.target.tagName!=='BUTTON'){e.preventDefault();this.showSlide(this.currentSlide-1);}
+      if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)||e.key===' '&&e.target.tagName!=='BUTTON'){e.preventDefault();this.showSlide(this.currentSlide+1);}
+      if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();this.showSlide(this.currentSlide-1);}
       if(e.key==='Home'){e.preventDefault();this.showSlide(0);}if(e.key==='End'){e.preventDefault();this.showSlide(this.slides.length-1);}
-      if(e.key.toLowerCase()==='n')this.toggleNotes();if(e.key.toLowerCase()==='t')this.toggleTimer();if(e.key.toLowerCase()==='r')this.resetTimer();if(e.key.toLowerCase()==='f')this.toggleFullscreen();if(e.key.toLowerCase()==='e')this.toggleEdit();
+      if(['n','p'].includes(e.key.toLowerCase()))this.openPresenter();if(e.key.toLowerCase()==='t')this.toggleTimer();if(e.key.toLowerCase()==='r')this.resetTimer();if(e.key.toLowerCase()==='f')this.toggleFullscreen();if(e.key.toLowerCase()==='e')this.toggleEdit();
     });
     let wheelAt=-Infinity;
     document.querySelector('.deck-viewport').addEventListener('wheel',e=>{if(this.editing)return;e.preventDefault();const now=performance.now();if(Math.abs(e.deltaY)>25&&now-wheelAt>650){this.showSlide(this.currentSlide+Math.sign(e.deltaY));wheelAt=now;}},{passive:false});
@@ -287,19 +289,71 @@ class SlidePresentation {
     document.addEventListener('pointermove',()=>this.showControls());
   }
   showControls() {document.body.classList.add('show-controls');clearTimeout(this.controlTimeout);this.controlTimeout=setTimeout(()=>document.body.classList.remove('show-controls'),2200);}
-  updateNotes() {
+  /* === PRIVATE PRESENTER WINDOW: ABOUT:BLANK INHERITS THIS FILE'S ORIGIN ===
+     The deck owns slide/timer state. The separate window reads that state and
+     invokes the same controls, so no server, storage sync, or network is needed.
+     Notes are inserted as plain text and never opened over the audience slides. */
+  openPresenter() {
+    if(this.presenterWindow&&!this.presenterWindow.closed){this.presenterWindow.focus();return;}
+    const popup=window.open('','_blank','popup,width=1000,height=850');
+    const status=document.getElementById('presenter-status');
+    if(!popup){status.textContent='Allow popups for this file, then press P again to open presenter view.';status.hidden=false;return;}
+    status.hidden=true;
+    this.presenterWindow=popup;
+    const fontCSS=[...document.styleSheets[0].cssRules].find(rule=>rule.type===CSSRule.FONT_FACE_RULE).cssText;
+    popup.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Smart Schedule — Private Presenter</title><style>
+      /* === PRESENTER LAYOUT: SCROLLABLE NOTES, INDEPENDENT OF THE SLIDE CANVAS === */
+      ${fontCSS}
+      *{box-sizing:border-box}body{margin:0;background:#142d28;color:#f4f1e9;font-family:Instrument,sans-serif;padding:32px}header{border-bottom:1px solid #557163;padding-bottom:20px}header p{font-size:17px;line-height:1.5;color:#c8d8c9;margin:10px 0 0}h1{font-size:25px;margin:0;font-weight:600}.presenter-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:24px 0}button{font:inherit;font-size:17px;border:1px solid #7b9687;background:#24493c;color:#fff;border-radius:6px;padding:12px 18px;cursor:pointer}button:disabled{opacity:.4;cursor:default}button:hover:enabled{background:#355e4b}button:focus-visible{outline:3px solid #dfab77;outline-offset:3px}#presenter-clock{font-size:34px;font-variant-numeric:tabular-nums;margin-left:auto}.overtime{color:#ffc299}#presenter-count{font-size:18px;color:#c8d8c9}main{background:#f4f1e9;color:#183d34;border-radius:8px;padding:32px}#notes-budget{font-size:16px;color:#5d7367}h2{font-size:30px;line-height:1.2;margin:14px 0 22px;letter-spacing:-.6px}#notes-copy{font-size:25px;line-height:1.7;white-space:pre-wrap;margin:0}footer{margin-top:24px;font-size:18px;line-height:1.6;color:#c8d8c9}footer p{margin:8px 0}.shortcuts{font-size:15px}@media(max-width:600px){body{padding:16px}main{padding:22px}#notes-copy{font-size:22px}#presenter-clock{margin-left:0}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+      </style></head><body><header><h1>Presenter view</h1><p>Keep this window private. Share only the original slides window, not your entire screen.</p></header>
+      <nav class="presenter-toolbar" aria-label="Presenter controls"><button id="presenter-previous">← Previous</button><span id="presenter-count"></span><button id="presenter-next">Next →</button><span id="presenter-clock" aria-label="Elapsed presentation time">0:00</span><button id="presenter-timer">Start timer</button><button id="presenter-reset">Reset</button></nav>
+      <main aria-label="Current slide speaker notes"><div id="notes-budget"></div><h2 id="notes-heading"></h2><p id="notes-copy"></p></main>
+      <footer><p id="next-slide"></p><p class="shortcuts">Arrow keys / Space: change slides · T: start or pause timer · R: reset · Target finish: 2:55</p></footer></body></html>`);
+    popup.document.close();
+    const doc=popup.document;
+    doc.getElementById('presenter-previous').onclick=()=>this.showSlide(this.currentSlide-1);
+    doc.getElementById('presenter-next').onclick=()=>this.showSlide(this.currentSlide+1);
+    doc.getElementById('presenter-timer').onclick=()=>this.toggleTimer();
+    doc.getElementById('presenter-reset').onclick=()=>this.resetTimer();
+    doc.addEventListener('keydown',e=>{
+      if(e.ctrlKey||e.metaKey||e.altKey)return;
+      if(['ArrowRight','ArrowDown','PageDown','ArrowLeft','ArrowUp','PageUp','Home','End'].includes(e.key)||e.key===' '&&e.target.tagName!=='BUTTON'){
+        e.preventDefault();
+        if(e.key==='Home')this.showSlide(0);else if(e.key==='End')this.showSlide(this.slides.length-1);else this.showSlide(this.currentSlide+(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)?-1:1));
+      }
+      if(e.key.toLowerCase()==='t')this.toggleTimer();if(e.key.toLowerCase()==='r')this.resetTimer();
+    });
+    this.updatePresenter();this.updateClock();popup.focus();
+  }
+  updatePresenter() {
+    if(!this.presenterWindow||this.presenterWindow.closed)return;
+    const doc=this.presenterWindow.document;
     const slide=this.slides[this.currentSlide];
-    document.getElementById('notes-heading').textContent=slide.getAttribute('aria-label');
     const prior=this.slides.slice(0,this.currentSlide).reduce((n,s)=>n+Number(s.dataset.seconds),0);
     const format=n=>`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;
-    document.getElementById('notes-budget').textContent=`Target ${format(prior)}–${format(prior+Number(slide.dataset.seconds))} · ${slide.dataset.seconds} seconds`;
-    document.getElementById('notes-copy').textContent=slide.querySelector('.speaker-notes').textContent;
+    const text=slide.querySelector('.speaker-notes').textContent;
+    doc.getElementById('notes-budget').textContent=`Target ${format(prior)}–${format(prior+Number(slide.dataset.seconds))} · ${slide.dataset.seconds} seconds`;
+    doc.getElementById('notes-heading').textContent=slide.getAttribute('aria-label');
+    const notes=doc.getElementById('notes-copy');
+    if(notes.textContent!==text){notes.textContent=text;doc.defaultView.scrollTo(0,0);}
+    doc.getElementById('presenter-count').textContent=`${this.currentSlide+1} / ${this.slides.length}`;
+    doc.getElementById('presenter-previous').disabled=this.currentSlide===0;
+    doc.getElementById('presenter-next').disabled=this.currentSlide===this.slides.length-1;
+    doc.getElementById('next-slide').textContent=this.currentSlide+1<this.slides.length?`Up next: ${this.slides[this.currentSlide+1].getAttribute('aria-label')}`:'Final slide — leave time for your closing sentence.';
   }
-  toggleNotes(force) {const panel=document.getElementById('notes-panel');const open=force===undefined?panel.hidden:force;panel.hidden=!open;document.getElementById('notes-toggle').setAttribute('aria-pressed',String(open));if(open)this.updateNotes();}
   totalElapsed() {return this.elapsed+(this.running?(performance.now()-this.started)/1000:0);}
   toggleTimer() {if(this.running){this.elapsed=this.totalElapsed();this.running=false;}else{this.started=performance.now();this.running=true;}document.getElementById('timer-toggle').textContent=this.running?'Pause':'Start';document.getElementById('timer-toggle').setAttribute('aria-pressed',String(this.running));this.updateClock();this.showControls();}
   resetTimer() {this.running=false;this.elapsed=0;document.getElementById('timer-toggle').textContent='Start';document.getElementById('timer-toggle').setAttribute('aria-pressed','false');this.updateClock();this.showControls();}
-  updateClock() {const n=Math.floor(this.totalElapsed()),el=document.getElementById('clock');el.textContent=`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;el.classList.toggle('overtime',n>=180);}
+  updateClock() {
+    const n=Math.floor(this.totalElapsed()),el=document.getElementById('clock');
+    el.textContent=`${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;el.classList.toggle('overtime',n>=180);
+    if(this.presenterWindow&&!this.presenterWindow.closed){
+      const doc=this.presenterWindow.document,clock=doc.getElementById('presenter-clock');
+      clock.textContent=el.textContent;clock.classList.toggle('overtime',n>=180);
+      doc.getElementById('presenter-timer').textContent=this.running?'Pause timer':'Start timer';
+      doc.getElementById('presenter-timer').setAttribute('aria-pressed',String(this.running));
+    }
+  }
   async toggleFullscreen() {try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(_){document.getElementById('live-status').textContent='Use your browser fullscreen command.';}}
   /* === INLINE EDITING: TEXT ONLY, LOCAL AUTOSAVE, AND PORTABLE HTML DOWNLOAD === */
   restoreEdits() {try{const stored=JSON.parse(localStorage.getItem(this.storageKey)||'{}');document.querySelectorAll('[data-edit]').forEach((el,i)=>{if(typeof stored[i]==='string')el.innerText=stored[i];});}catch(_) {}}
@@ -312,7 +366,7 @@ class SlidePresentation {
     document.querySelectorAll('[data-edit]').forEach(el=>el.addEventListener('input',()=>this.saveEdits()));
   }
   toggleEdit(force) {this.editing=force===undefined?!this.editing:force;document.body.classList.toggle('editing',this.editing);document.querySelectorAll('[data-edit]').forEach(el=>{if(this.editing)el.setAttribute('contenteditable','plaintext-only');else el.removeAttribute('contenteditable');});const toggle=document.getElementById('editToggle');toggle.classList.toggle('active',this.editing);toggle.setAttribute('aria-pressed',String(this.editing));toggle.textContent=this.editing?'Done editing (E)':'Edit (E)';if(!this.editing){this.saveEdits();if(document.activeElement.isContentEditable)document.activeElement.blur();}}
-  download() {this.saveEdits();const copy=document.documentElement.cloneNode(true);copy.querySelector('body').classList.remove('editing');copy.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));copy.querySelectorAll('.slide').forEach((el,i)=>{el.classList.toggle('active',i===0);el.classList.toggle('visible',i===0);el.setAttribute('aria-hidden',String(i!==0));el.removeAttribute('inert');});copy.querySelector('#notes-panel').hidden=true;copy.querySelector('#editToggle').classList.remove('active','show');copy.querySelector('#editToggle').textContent='Edit (E)';copy.querySelector('#editToggle').setAttribute('aria-pressed','false');const url=URL.createObjectURL(new Blob(['<!DOCTYPE html>\n'+copy.outerHTML],{type:'text/html'}));const a=document.createElement('a');a.href=url;a.download='smart-schedule-seminar.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  download() {this.saveEdits();const copy=document.documentElement.cloneNode(true);copy.querySelector('body').classList.remove('editing');copy.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));copy.querySelectorAll('.slide').forEach((el,i)=>{el.classList.toggle('active',i===0);el.classList.toggle('visible',i===0);el.setAttribute('aria-hidden',String(i!==0));el.removeAttribute('inert');});copy.querySelector('#presenter-status').hidden=true;copy.querySelector('#editToggle').classList.remove('active','show');copy.querySelector('#editToggle').textContent='Edit (E)';copy.querySelector('#editToggle').setAttribute('aria-pressed','false');const url=URL.createObjectURL(new Blob(['<!DOCTYPE html>\n'+copy.outerHTML],{type:'text/html'}));const a=document.createElement('a');a.href=url;a.download='smart-schedule-seminar.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 }
 window.presentation=new SlidePresentation();
 </script></body></html>

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load scheduling_tags %}
+{% block title %}Recurring commitments | Smart Schedule{% endblock %}
+{% block page_name %}Recurring commitments{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Recurring commitments</h1><p class="page-description">Regular classes, shifts, and protected time. Earlier schedules and explicit one-off changes are preserved.</p></div><div class="heading-actions"><a class="btn btn-outline-secondary" href="{% url 'scheduling:commitment_list' %}">One-time commitments</a><a class="btn btn-primary" href="{% url 'scheduling:series_create' %}">{% include 'components/icon.html' with name='plus' %}Add recurring commitment</a></div></div>
+<div class="commitment-list">
+{% for series in series_list %}
+  <article class="recurring-row">
+    <p class="commitment-category"><span class="source-dot d-inline-block" style="background-color: {{ series.source.color }};" aria-hidden="true"></span> {{ series.source.name }}</p>
+    <h2>{{ series.revisions.all.0.title }}</h2>
+    <p>Starts {{ series.starts_on|date:'j M Y' }}{% if series.ends_before %} · Stops original occurrences from {{ series.ends_before|date:'j M Y' }}{% else %} · No end date{% endif %}</p>
+    <details><summary>Schedule history and one-off changes</summary>
+      <ul>{% for revision in series.revisions.all %}<li>{{ revision.title }} · from {{ revision.effective_from|date:'j M Y' }}{% if revision.effective_until %} until {{ revision.effective_until|date:'j M Y' }} (exclusive){% endif %}<br>{{ revision.start_time|time:'H:i' }} – {{ revision.end_time|time:'H:i' }}{% if revision.end_day_offset %} next day{% endif %} · {% for weekday in revision.weekdays.all %}{{ weekday.weekday|weekday_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</li>{% endfor %}</ul>
+      <ul>{% for exception in series.exceptions.all %}<li>{{ exception.original_start_date|date:'j M Y' }} · {{ exception.get_kind_display }}{% if exception.starts_at %}: {{ exception.starts_at|date:'D j M Y H:i T' }} – {{ exception.ends_at|date:'D j M Y H:i T' }}{% endif %} <a href="{% url 'scheduling:occurrence_change' series.pk exception.original_start_date|date:'Y-m-d' %}">Change</a> · <a href="{% url 'scheduling:occurrence_cancel' series.pk exception.original_start_date|date:'Y-m-d' %}">Cancel occurrence</a></li>{% empty %}<li>No one-off changes.</li>{% endfor %}</ul>
+    </details>
+    <div class="form-actions"><a class="btn btn-outline-secondary btn-sm" href="{% url 'scheduling:series_revise' series.pk %}">Change future hours</a><a class="btn btn-outline-danger btn-sm" href="{% url 'scheduling:series_end' series.pk %}">End recurrence</a></div>
+  </article>
+{% empty %}<section class="empty-state"><h2>Add your first recurring commitment</h2><p>Choose a source, weekdays, and regular hours. You will review the dates and conflicts before saving.</p><a class="btn btn-primary" href="{% url 'scheduling:series_create' %}">Add recurring commitment</a></section>{% endfor %}
+</div>
+{% endblock %}

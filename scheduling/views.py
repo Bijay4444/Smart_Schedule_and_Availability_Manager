@@ -24,7 +24,8 @@ class WeeklyCalendarView(LoginRequiredMixin, TemplateView):
             week = calendar_for_user(owner=request.user, anchor=anchor)
         except ValidationError as error:
             return HttpResponseBadRequest(" ".join(error.messages))
-        return self.render_to_response(self.get_context_data(week=week))
+        calendar_view = "timeline" if request.GET.get("view") == "timeline" else "board"
+        return self.render_to_response(self.get_context_data(week=week, calendar_view=calendar_view))
 
 
 class CommitmentListView(LoginRequiredMixin, ListView):
@@ -92,7 +93,7 @@ class CommitmentFormMixin:
             )
         except ConflictingCommitments as error:
             return self.render_to_response(
-                self.get_context_data(form=form, conflicts=error.conflicts)
+                self.get_context_data(form=form, conflicts=error.conflicts, conflict_issues=error.issues)
             )
         except ValidationError as error:
             form.add_error(None, error)

@@ -6,6 +6,7 @@ Set PLAYWRIGHT_BROWSERS_PATH if using an existing browser installation.
 """
 
 from pathlib import Path
+import os
 import json
 import re
 import tempfile
@@ -20,8 +21,9 @@ CAPTURES.mkdir(exist_ok=True)
 
 def main():
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.chromium.launch(executable_path=os.environ.get("SLIDES_BROWSER_PATH"))
         context = browser.new_context(viewport={"width": 1280, "height": 720}, reduced_motion="reduce")
+        context.set_offline(True)
         page = context.new_page()
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
@@ -73,11 +75,59 @@ def main():
         assert page.locator("#count").inner_text() == "6 / 6"
         page.keyboard.press("Home")
         assert page.locator("#previous").is_disabled()
+        # Notes live only in a separate offline presenter window. Both windows
+        # control the same slide/timer state; the audience never gets an overlay.
+        with page.expect_popup() as opened:
+            page.keyboard.press("n")
+        presenter = opened.value
+        presenter.set_viewport_size({"width": 1000, "height": 850})
+        presenter.on("pageerror", lambda error: errors.append(str(error)))
+        presenter.locator("#notes-copy").wait_for()
+        assert "Private Presenter" in presenter.title()
+        assert presenter.evaluate("document.documentElement.scrollWidth <= innerWidth")
+        assert "0:00–0:20" in presenter.locator("#notes-budget").inner_text()
+        assert "My project is Smart Schedule" in presenter.locator("#notes-copy").inner_text()
+        assert page.locator("#notes-panel, #notes-copy").count() == 0
+        assert page.locator(".speaker-notes:visible").count() == 0
+        assert "Share only the original slides window" in presenter.locator("header").inner_text()
+        presenter.get_by_role("button", name="Next →").click()
+        assert page.locator("#count").inner_text() == "2 / 6"
+        assert "The idea is one private place" in presenter.locator("#notes-copy").inner_text()
+        assert "Up next: 3." in presenter.locator("#next-slide").inner_text()
+        presenter.keyboard.press("PageDown")
+        assert page.locator("#count").inner_text() == "3 / 6"
+        page.keyboard.press("End")
+        assert presenter.locator("#presenter-count").inner_text() == "6 / 6"
+        assert presenter.locator("#presenter-next").is_disabled()
+        assert "Final slide" in presenter.locator("#next-slide").inner_text()
+        presenter.keyboard.press("Home")
+        assert presenter.locator("#presenter-previous").is_disabled()
+        page.keyboard.press("p")
+        assert len(context.pages) == 2, "Reuse the already open presenter window"
+        presenter.screenshot(path=str(CAPTURES / "presenter-view.png"), full_page=True)
+        page.screenshot(path=str(CAPTURES / "audience-with-presenter-open.png"))
+        presenter.get_by_role("button", name="Start timer").click()
+        page.wait_for_timeout(1150)
+        presenter.get_by_role("button", name="Pause timer").click()
+        assert page.locator("#clock").inner_text() == presenter.locator("#presenter-clock").inner_text()
+        assert not page.evaluate("presentation.running")
+        presenter.get_by_role("button", name="Reset", exact=True).click()
+        assert page.locator("#clock").inner_text() == "0:00"
+        assert presenter.locator("#presenter-clock").inner_text() == "0:00"
+        presenter.close()
+
+        # A blocked popup must never fall back to displaying notes to the audience.
+        page.evaluate("window.originalOpen=window.open; window.open=()=>null")
         page.keyboard.press("n")
-        assert page.locator("#notes-panel").is_visible()
-        assert "0:00–0:20" in page.locator("#notes-budget").inner_text()
-        page.keyboard.press("Escape")
-        assert page.locator("#notes-panel").is_hidden()
+        assert page.locator("#presenter-status").is_visible()
+        assert "Allow popups" in page.locator("#presenter-status").inner_text()
+        assert page.locator(".speaker-notes:visible").count() == 0
+        page.evaluate("window.open=window.originalOpen; delete window.originalOpen")
+        with page.expect_popup() as reopened:
+            page.get_by_role("button", name="Presenter", exact=True).click()
+        assert page.locator("#presenter-status").is_hidden()
+        reopened.value.locator("#notes-copy").wait_for()
+        reopened.value.close()
         page.keyboard.press("t")
         page.wait_for_timeout(1150)
         page.keyboard.press("t")
@@ -107,6 +157,10 @@ def main():
         page.evaluate("localStorage.clear()")
         page.goto(downloaded.as_uri())
         assert page.locator("h1").inner_text() == "Smart Schedule — rehearsal"
+        with page.expect_popup() as exported_presenter:
+            page.keyboard.press("p")
+        exported_presenter.value.locator("#notes-copy").wait_for()
+        exported_presenter.value.close()
         page.goto((ROOT / "index.html").as_uri())
         page.evaluate("localStorage.clear()")
         page.reload()
@@ -134,7 +188,7 @@ def main():
         assert len(re.findall(rb"/Type /Page\b", pdf)) == 6, "PDF must contain six pages"
         assert b"/MediaBox [0 0 1440 810]" in pdf, "PDF must stay widescreen"
         browser.close()
-        print(json.dumps({"result": "PASS", "slides": 6, "viewports": ["1280×720", "390×844"], "script_budget_seconds": 175, "pdf_pages": 6, "browser_errors": errors, "screenshots": str(CAPTURES)}, indent=2))
+        print(json.dumps({"result": "PASS", "slides": 6, "viewports": ["1280×720", "390×844"], "private_presenter": "PASS", "script_budget_seconds": 175, "pdf_pages": 6, "browser_errors": errors, "screenshots": str(CAPTURES)}, indent=2))
 
 
 if __name__ == "__main__":

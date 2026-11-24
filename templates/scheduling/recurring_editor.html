@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}{{ editor_title }} | Smart Schedule{% endblock %}
+{% block page_name %}{{ editor_title }}{% endblock %}
+{% block content %}
+<div class="editor-layout">
+  <a class="back-link" href="{{ return_url }}">{% include 'components/icon.html' with name='left' %}Back to your schedule</a>
+  <section class="editor-surface" aria-labelledby="editor-heading">
+    <header class="editor-heading"><h1 id="editor-heading">{{ editor_title }}</h1><p class="page-description">{{ description }}</p></header>
+    <form method="post">
+      {% csrf_token %}
+      {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+      {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="form-grid">
+        {% for field in form.visible_fields %}
+          {% if field.name != 'confirm_review' %}
+            <div{% if field.name == 'title' or field.name == 'replacement_title' or field.name == 'weekdays' %} class="form-grid-wide"{% endif %}>
+              {% if field.name == 'weekdays' %}<fieldset class="weekday-choices"><legend class="form-label">{{ field.label }}</legend>{{ field }}{% if field.errors %}<div class="field-error" role="alert">{{ field.errors }}</div>{% endif %}</fieldset>
+              {% elif field.name == 'ends_next_day' or field.name == 'second_start' or field.name == 'second_end' or field.name == 'confirm' %}<div class="form-check">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% if field.errors %}<div class="field-error" role="alert">{{ field.errors }}</div>{% endif %}</div>
+              {% else %}{% include 'components/form_field.html' %}{% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% if preview %}
+        <section class="recurring-review" aria-labelledby="preview-heading">
+          <h2 id="preview-heading">Review before saving</h2>
+          {% if review_changed %}<p role="alert">The inputs, schedule, or review validity changed. Review this updated result before saving.</p>{% endif %}
+          <p><strong>Checked {{ preview.starts_on|date:'j M Y' }} through {{ preview.through|date:'j M Y' }}</strong> · Halifax time</p>
+          <p>{{ preview.occurrences|length }} occurrence{{ preview.occurrences|length|pluralize }} in this preview.</p>
+          {% if preview.limited %}<p>Dates after this range are not checked by this preview. Later calendar views and availability calculations still use the current schedule.</p>{% endif %}
+          {% if not preview.conflicts and not preview.issues %}<p>No conflicts found in this range.</p>{% endif %}
+          {% if not preview.occurrences and not preview.issues %}<p>No occurrences fall in the checked range. Check the selected weekdays and dates before saving.</p>{% endif %}
+          {% if preview.conflicts %}<div class="alert alert-warning" role="alert"><h3 class="h6">Overlapping commitments</h3>{% for group in preview.conflict_groups %}<p><strong>{{ group.count }} overlap{{ group.count|pluralize }} with {{ group.title }}</strong></p><ul>{% include 'components/recurring_conflict.html' with pair=group.first %}</ul>{% if group.remaining %}<details><summary>Show the remaining {{ group.remaining|length }} overlap{{ group.remaining|length|pluralize }}</summary><ul>{% for pair in group.remaining %}{% include 'components/recurring_conflict.html' %}{% endfor %}</ul></details>{% endif %}{% endfor %}</div>{% endif %}
+          {% if preview.issues %}<div class="alert alert-warning" role="alert"><h3 class="h6">Some dates need review</h3><p>These dates remain incomplete for availability until the occurrence is changed or cancelled.</p><ul>{% for issue in preview.issues %}<li>{{ issue.title }} · {{ issue.original_start_date|date:'j M Y' }}<br>{{ issue.message }}</li>{% endfor %}</ul></div>{% endif %}
+          {% if preview.adjustments %}<h3 class="h6">Clock-change choices</h3><ul>{% for item in preview.adjustments %}<li>{{ item.original_start_date|date:'j M Y' }}: {{ item.starts_at|date:'H:i T' }} – {{ item.ends_at|date:'H:i T' }}. Missing times move forward; repeated times use the first occurrence.</li>{% endfor %}</ul>{% endif %}
+          {% for note in form.clock_notes %}<p>{{ note }}</p>{% endfor %}
+          <div class="form-check">{{ form.confirm_review }}<label class="form-check-label" for="{{ form.confirm_review.id_for_label }}">{{ form.confirm_review.label }}</label></div>
+        </section>
+      {% endif %}
+      <div class="form-actions"><button class="btn btn-primary" type="submit">{% if not needs_review %}Confirm change{% elif preview %}Save recurring commitment{% else %}Review recurring commitment{% endif %}</button><a class="btn btn-outline-secondary" href="{{ return_url }}">Cancel</a></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

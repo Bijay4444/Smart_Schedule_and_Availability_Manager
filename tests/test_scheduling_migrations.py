@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, time
 
 import pytest
 from django.db import connection
@@ -44,4 +44,45 @@ def test_recurring_migrations_preserve_legacy_one_time_rows_and_start_new_tables
             assert cursor.fetchone()[0] is True
     finally:
         # Restore the schema even when an assertion fails, for following tests.
+        MigrationExecutor(connection).migrate(latest)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_working_migration_preserves_recurring_rows_and_starts_working_tables_empty():
+    executor = MigrationExecutor(connection)
+    latest = executor.loader.graph.leaf_nodes()
+    previous = [("scheduling", "0003_recurring_foundation")]
+    try:
+        executor.migrate(previous)
+        apps = executor.loader.project_state(previous).apps
+        user = apps.get_model("accounts", "User").objects.create(username="before_working")
+        source = apps.get_model("scheduling", "CommitmentSource").objects.create(
+            owner_id=user.pk, name="Classes", color="#123456",
+        )
+        series = apps.get_model("scheduling", "RecurringSeries").objects.create(
+            source_id=source.pk, time_zone="America/Halifax", starts_on=date(2026, 10, 26),
+        )
+        revision = apps.get_model("scheduling", "SeriesRevision").objects.create(
+            series_id=series.pk, effective_from=date(2026, 10, 26), title="Class",
+            start_time=time(9), end_time=time(11),
+        )
+        weekday = apps.get_model("scheduling", "RevisionWeekday").objects.create(
+            revision_id=revision.pk, weekday=0,
+        )
+        exception = apps.get_model("scheduling", "OccurrenceException").objects.create(
+            series_id=series.pk, original_start_date=date(2026, 11, 2), kind="cancel",
+        )
+        before = {model: list(apps.get_model("scheduling", model).objects.values())
+                  for model in ("CommitmentSource", "Commitment", "RecurringSeries", "SeriesRevision",
+                                "RevisionWeekday", "OccurrenceException")}
+        executor = MigrationExecutor(connection)
+        executor.migrate(latest)
+        apps = executor.loader.project_state(latest).apps
+        for model, rows in before.items():
+            assert list(apps.get_model("scheduling", model).objects.values()) == rows
+        assert apps.get_model("scheduling", "RevisionWeekday").objects.get(pk=weekday.pk).weekday == 0
+        assert apps.get_model("scheduling", "OccurrenceException").objects.get(pk=exception.pk).kind == "cancel"
+        for model in ("WorkingScheduleRevision", "WorkingWindow", "WorkingDateOverride", "OverrideInterval"):
+            assert not apps.get_model("scheduling", model).objects.exists()
+    finally:
         MigrationExecutor(connection).migrate(latest)

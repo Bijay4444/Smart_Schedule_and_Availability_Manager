@@ -19,17 +19,53 @@ screens, overnight dates, overlap warnings with explicit confirmation, and
 persistent conflict indicators. Source archival and protected references retain
 existing commitments. Recurring series, dated revisions, weekdays, and exceptions
 are stored in the new tables, with PostgreSQL revision-period exclusions.
-The 189-test PostgreSQL suite passes, including migration preservation and
-concurrent writes. Recurring services now support creation, future edits,
+The PostgreSQL suite now passes 479 tests, including migration preservation and
+concurrent writes. Recurring services support creation, future edits,
 ending, one-off exceptions, and bounded occurrence generation with DST metadata
 and review issues. A prior live HTTP check passed the existing workflow and
 archived-source correction. The weekly calendar is now available at `/week/`,
 with source colors, overnight portions, date-to-form entry, details, visible
 overlap indicators, and a phone agenda. Chromium checks passed at desktop,
-phone, and tablet sizes. Conflict-save integration, recurring forms, working
-windows, and availability remain future increments.
+phone, and tablet sizes. The working-availability backend now adds dated weekly
+working windows, full-date overrides, availability subtraction, Monday–Sunday
+results, and a read-only proposed-shift checker covering both one-time and
+recurring commitments. Invalid DST intervals withhold affected dates and expose
+review metadata. Migration 0004 has been tested on separate PostgreSQL; the user
+subsequently reported applying the application migration. This increment's
+verification uses disposable databases and does not change application data.
+One-time save warnings and persistent list indicators now include recurring
+occurrences and unresolved clock-review dates, with explicit acknowledgement
+before saving. A shared owner lock serializes schedule writes during preflight.
+Recurring entry, future editing, ending, and one-off change/cancel forms now
+use owner-checked services. Creation/revision/replacement reviews stage changes
+and roll them back until a matching signed review is confirmed. The user selected
+a 12-month warning preview for open-ended recurring schedules; its exact range
+and limitation are displayed. Working-window screens now support weekly patterns,
+future-effective edits, full-date overrides, all-day closure, restoration of the
+weekly pattern, and a dated willingness preview at `/working-windows/`.
+Availability display/sharing is now available at `/availability/`: dated visual
+intervals, week navigation, and employer-facing copy text omit private commitment
+details. Incomplete dates are labelled Needs review and copied weeks include a
+draft notice when necessary. Clipboard failures fall back to text selection;
+the text and navigation also work without JavaScript.
+The proposed-shift screen at `/check-shift/` checks a complete unsaved interval,
+distinguishes conflicts from hours outside working windows, and withholds an
+available result when a schedule date needs review. Halifax clock resolutions
+are explained with explicit repeated-hour choices. Checks work without JavaScript.
+The `seed_demo` management command now prepares four fictional test accounts
+covering the implemented features, including private, empty, and DST/review
+cases. It prints dated scenarios, preserves manual edits on rerun, and offers
+an explicit reset limited to marked demo accounts. The initial fixture set was
+loaded into the application database for 16–22 November 2026. See the
+[demo data walkthrough](demo_data.md) for credentials and expected outcomes.
 See the [recurrence service guide](recurrence_services.md) for architecture,
 the [calendar guide](weekly_calendar.md) for the frontend,
+the [availability service guide](availability_services.md) for the new backend,
+the [conflict service guide](conflict_services.md) for save integration,
+the [recurring workflow guide](recurring_workflow.md) for entry and editing,
+the [working-window screen guide](working_window_screens.md) for configuration,
+the [availability screen guide](availability_screen.md) for display/sharing,
+the [shift-check guide](proposed_shift_screen.md) for checking offers,
 the [development checklist](development_checklist.md) for task status, and
 [README.md](../README.md) for setup and verification.
 
@@ -203,6 +239,12 @@ preserving the input-to-availability journey.
   must appear in both weekly views and block Monday morning availability.
 - Users can save overlapping commitments after an explicit warning. Conflicts
   remain visible so the saved schedule can represent an existing real conflict.
+- Recurring create/future-edit warnings preview 12 months from the start/change
+  date, or through the series end if earlier. Show the checked dates and make
+  longer schedules' unchecked dates explicit. One-off replacements are checked
+  for their entire actual interval. This preview does not claim an indefinite
+  schedule is conflict-free; calendar and availability reads still check the
+  dates requested. The 12-month preview was confirmed on 2026-11-05.
 - Availability includes all positive-length gaps inside working windows; it does
   not claim that a gap is long enough for an employer to offer a shift.
 

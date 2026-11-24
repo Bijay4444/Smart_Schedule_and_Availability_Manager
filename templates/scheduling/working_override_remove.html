@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Restore weekly working windows | Smart Schedule{% endblock %}
+{% block page_name %}Working windows{% endblock %}
+{% block content %}
+<div class="editor-layout"><a class="back-link" href="{{ return_url }}">{% include 'components/icon.html' with name='left' %}Back to working windows</a>
+<section class="editor-surface" aria-labelledby="restore-heading"><header class="editor-heading"><h1 id="restore-heading">Restore weekly working windows</h1><p class="page-description">Remove the override for {{ override.local_date|date:'l j F Y' }}. The weekly pattern, including any overnight carry-in, will apply again. Commitments will still be subtracted when calculating availability.</p></header>
+<form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}<div class="form-check">{{ form.confirm }}<label class="form-check-label" for="{{ form.confirm.id_for_label }}">{{ form.confirm.label }}</label>{% if form.confirm.errors %}<div class="field-error" role="alert">{{ form.confirm.errors }}</div>{% endif %}</div><div class="form-actions"><button class="btn btn-primary" type="submit">Restore weekly windows</button><a class="btn btn-outline-secondary" href="{{ return_url }}">Keep date override</a></div></form>
+</section></div>
+{% endblock %}

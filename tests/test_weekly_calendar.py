@@ -18,6 +18,54 @@ def test_calendar_requires_login(client):
     assert response.url.startswith(reverse("login") + "?next=")
 
 
+def test_week_defaults_to_content_height_board_without_hour_rows(client, owner, commitment):
+    client.force_login(owner)
+    response = client.get(reverse("scheduling:week"), {"week": "2026-10-26"})
+    assert response.context["calendar_view"] == "board"
+    assert b'calendar-mode-board' in response.content
+    assert b'class="calendar-hour-lines"' not in response.content
+    assert b'Morning shift' in response.content
+    assert b'10:00' in response.content and b'12:00' in response.content
+    assert b'View work availability' in response.content
+    assert b'/availability/?week=2026-10-26' in response.content
+
+
+def test_optional_time_grid_and_navigation_keep_selected_layout(client, owner, commitment):
+    client.force_login(owner)
+    response = client.get(reverse("scheduling:week"), {"week": "2026-10-26", "view": "timeline"})
+    assert response.context["calendar_view"] == "timeline"
+    assert b'calendar-mode-timeline' in response.content
+    assert b'class="calendar-hour-lines"' in response.content
+    assert b'?week=2026-10-19&amp;view=timeline' in response.content
+    assert b'?week=2026-11-02&amp;view=timeline' in response.content
+    assert b'href="/week/?view=timeline"' in response.content
+    assert b'view=board' in response.content
+
+
+def test_unknown_week_layout_falls_back_to_board(client, owner):
+    client.force_login(owner)
+    response = client.get(reverse("scheduling:week"), {"view": '<script>alert(1)</script>'})
+    assert response.status_code == 200
+    assert response.context["calendar_view"] == "board"
+    assert b'<script>alert' not in response.content
+
+
+def test_board_keeps_short_commitments_conflicts_and_overnight_portions(client, owner, source, halifax_time):
+    Commitment.objects.create(source=source, title="Short check-in", starts_at=halifax_time("2026-10-26T09:00"), ends_at=halifax_time("2026-10-26T09:05"))
+    Commitment.objects.create(source=source, title="Overlapping check-in", starts_at=halifax_time("2026-10-26T09:02"), ends_at=halifax_time("2026-10-26T09:10"))
+    Commitment.objects.create(source=source, title="Overnight shift", starts_at=halifax_time("2026-10-26T23:00"), ends_at=halifax_time("2026-10-27T02:00"))
+    client.force_login(owner)
+    response = client.get(reverse("scheduling:week"), {"week": "2026-10-26"})
+    assert response.context["week"]["entry_count"] == 3
+    assert response.context["week"]["conflict_count"] == 2
+    assert len(response.context["week"]["days"][0].blocks) == 3
+    assert len(response.context["week"]["days"][1].blocks) == 1
+    assert b'09:05' in response.content
+    assert b'2 overlapping' in response.content
+    assert b'From previous day' in response.content
+    assert b'Continues next day' in response.content
+
+
 def test_empty_calendar_has_seven_days_navigation_and_date_specific_add_links(client, owner):
     client.force_login(owner)
     response = client.get(reverse("scheduling:week"), {"week": "2026-10-29"})

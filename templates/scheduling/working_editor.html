@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ editor_title }} | Smart Schedule{% endblock %}
+{% block page_name %}Working windows{% endblock %}
+{% block content %}
+<div class="editor-layout working-editor">
+  <a class="back-link" href="{{ return_url }}">{% include 'components/icon.html' with name='left' %}Back to working windows</a>
+  <section class="editor-surface" aria-labelledby="working-heading">
+    <header class="editor-heading"><h1 id="working-heading">{{ editor_title }}</h1><p class="page-description">{{ description }}</p><p class="form-text">All times use Halifax time.</p></header>
+    <form method="post" data-window-editor data-prefix="{{ rows.prefix }}">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        {% if field.name == 'no_windows' or field.name == 'closed_all_day' %}<div class="form-check working-state-choice">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.errors %}<div class="field-error" role="alert">{{ field.errors }}</div>{% endif %}</div>
+        {% else %}{% include 'components/form_field.html' %}{% endif %}
+      {% endfor %}
+      {{ rows.management_form }}
+      {% if rows.non_form_errors %}<div class="alert alert-danger" role="alert">{{ rows.non_form_errors }}</div>{% endif %}
+      <p class="form-text">Add as many time windows as you need. To remove a row, select its remove checkbox. To offer no hours, remove all rows and choose the option above.</p>
+      <div data-window-rows>
+        {% for row in rows %}{% include 'components/working_window_row.html' %}{% endfor %}
+      </div>
+      <template data-empty-window>{% include 'components/working_window_row.html' with row=rows.empty_form %}</template>
+      <button class="btn btn-outline-secondary" name="action" value="add_window" type="submit" formnovalidate data-add-window>{% include 'components/icon.html' with name='plus' %}Add another window</button>
+      <p class="form-text" aria-live="polite" data-window-status></p>
+      {% if clock_notes %}<div class="alert alert-info"><h2 class="h6">Clock-change choices</h2>{% for note in clock_notes %}<p>{{ note }}</p>{% endfor %}</div>{% endif %}
+      <div class="form-actions"><button class="btn btn-primary" name="action" value="save" type="submit">Save working windows</button><a class="btn btn-outline-secondary" href="{{ return_url }}">Cancel</a></div>
+    </form>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/working-windows.js' %}" defer></script>{% endblock %}

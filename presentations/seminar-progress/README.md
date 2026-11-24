@@ -32,8 +32,10 @@ app screenshot, so a live application walkthrough is unnecessary.
 - **Home / End:** first / last slide. Swipe or use the mouse wheel to navigate.
 - **F:** fullscreen. Browser fullscreen commands also work.
 - **T:** start/pause the elapsed timer. **R:** reset it. The timer does not advance slides.
-- **N:** show/hide notes. Notes appear on the current screen; close them before
-  projecting, or keep the Markdown script on another device.
+- **P / N**, or the **Presenter** button: open a separate presenter window with
+  speaker notes, slide timing, the next slide title, navigation, and timer controls.
+  Slide changes and the timer stay synchronized in both windows. Pressing the
+  shortcut again focuses the existing presenter window.
 - Move the pointer to reveal the bottom controls; they fade out automatically.
 - **E**, or hover/click the upper-left corner: edit slide text. Changes autosave
   locally where browser storage is available. **Escape** finishes editing.
@@ -41,6 +43,32 @@ app screenshot, so a live application walkthrough is unnecessary.
   After edits, review the slide layout. Notes and PDF are separate artifacts.
 - Colors are set in `:root`; `.reveal` controls the short entrance animations.
   The 1920×1080 canvas scales as a whole, preserving 16:9 on every screen.
+
+## Keep speaker notes private while sharing
+
+1. Open `index.html`, then press **P** to open presenter view. If the browser
+   blocks the popup, allow popups for this file and press **P** again.
+2. In your meeting app's sharing picker, choose **Window** and select the
+   original **Smart Schedule — Seminar Progress** slides window. Keep
+   **Smart Schedule — Private Presenter** unshared. Sharing just the audience
+   browser tab also works if your meeting app supports tab sharing.
+3. Read notes and use **Next / Previous** or arrow keys in presenter view.
+   The audience's slides advance at the same time. Start the timer there with **T**.
+
+With one monitor, arrange the two windows side by side or switch between them
+while sharing only the slides window. With two monitors, keep presenter view on
+your private display. For a projector, use the operating system's **Extend**
+display mode and move the slides window to the projector.
+
+Sharing your **entire screen**, or duplicating the same display to a projector,
+shows every visible window, including the presenter window. The presentation
+cannot hide notes from whole-screen capture. Choose the slides window/tab or
+use an extended display. Keep the original slides window open while presenting;
+it controls the notes window and the shared timer.
+
+Presenter view works offline from the same HTML file. Opening it never displays
+notes over the audience's slides. Closing it leaves the slides and timer running;
+press **P** to reopen it at the current slide.
 
 [smart-schedule-progress.pdf](smart-schedule-progress.pdf) is the six-page
 widescreen backup. It contains static slides without animations, editing, or
@@ -70,8 +98,9 @@ review captures and shows fictional sample data, including a fictional account.
 
 `check_slides.py` uses a temporary Playwright environment, without adding any
 application dependency. It verifies desktop and phone stage geometry, text fit,
-embedded assets, keyboard/wheel/swipe navigation, URL slide selection, speaker
-notes, timer pause/reset, local edit persistence, portable HTML export, and a
+embedded assets, keyboard/wheel/swipe navigation, URL slide selection,
+private speaker notes, two-window navigation and timer synchronization, popup blocking
+and reopening, timer pause/reset, local edit persistence, portable HTML export, and a
 six-page 16:9 PDF. It does not access Django or PostgreSQL.
 
 With Playwright and Chromium available:

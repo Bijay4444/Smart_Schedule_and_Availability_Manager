@@ -5,23 +5,16 @@ from django.db import transaction
 from django.db.models import Exists, OuterRef
 from django.utils import timezone
 
+from .conflicts import find_conflicts, inspect_conflicts, mark_recurring_conflicts
+from .locking import lock_schedule_owner
 from .models import Commitment, CommitmentSource
 
 
 class ConflictingCommitments(Exception):
-    def __init__(self, conflicts):
+    def __init__(self, conflicts, issues=()):
         self.conflicts = conflicts
-        super().__init__("This commitment overlaps your existing commitments.")
-
-
-def find_conflicts(*, owner, starts_at, ends_at, exclude_pk=None):
-    """Strict inequalities allow one commitment to start as another ends."""
-    conflicts = Commitment.objects.filter(
-        source__owner=owner, starts_at__lt=ends_at, ends_at__gt=starts_at
-    ).select_related("source")
-    if exclude_pk is not None:
-        conflicts = conflicts.exclude(pk=exclude_pk)
-    return conflicts
+        self.issues = issues
+        super().__init__("Review the scheduling warnings before saving this commitment.")
 
 
 def commitments_for_user(*, owner):
@@ -31,15 +24,17 @@ def commitments_for_user(*, owner):
         ends_at=OuterRef("ends_at"),
         exclude_pk=OuterRef("pk"),
     )
-    return (
+    commitments = (
         Commitment.objects.filter(source__owner=owner)
         .select_related("source")
         .annotate(has_conflict=Exists(conflicts))
     )
+    return mark_recurring_conflicts(owner=owner, commitments=commitments)
 
 
 @transaction.atomic
 def save_commitment(*, commitment, owner, confirm_conflicts=False):
+    lock_schedule_owner(owner)
     # The source lock serializes assignment with source archival.
     source = CommitmentSource.objects.select_for_update().filter(
         pk=commitment.source_id, owner=owner
@@ -57,16 +52,14 @@ def save_commitment(*, commitment, owner, confirm_conflicts=False):
         raise ValidationError({"source": "Choose an active source for a new assignment."})
 
     commitment.full_clean()
-    conflicts = list(
-        find_conflicts(
-            owner=owner,
-            starts_at=commitment.starts_at,
-            ends_at=commitment.ends_at,
-            exclude_pk=commitment.pk,
-        )
+    check = inspect_conflicts(
+        owner=owner,
+        starts_at=commitment.starts_at,
+        ends_at=commitment.ends_at,
+        exclude_pk=commitment.pk,
     )
-    if conflicts and not confirm_conflicts:
-        raise ConflictingCommitments(conflicts)
+    if (check.conflicts or check.issues) and not confirm_conflicts:
+        raise ConflictingCommitments(list(check.conflicts), check.issues)
 
     commitment.save()
     return commitment

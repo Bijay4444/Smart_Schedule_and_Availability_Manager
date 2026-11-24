@@ -1,0 +1,25 @@
+#cloud-config
+# No application credentials belong in VM customData/cloud-init logs.
+write_files:
+  - path: /usr/local/sbin/smart-schedule-bootstrap
+    permissions: '0700'
+    content: |
+      #!/bin/sh
+      set -eu
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y ca-certificates curl
+      install -m 0755 -d /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+      chmod a+r /etc/apt/keyrings/docker.asc
+      . /etc/os-release
+      architecture=$(dpkg --print-architecture)
+      printf 'Types: deb\nURIs: https://download.docker.com/linux/ubuntu\nSuites: %s\nComponents: stable\nArchitectures: %s\nSigned-By: /etc/apt/keyrings/docker.asc\n' "$VERSION_CODENAME" "$architecture" > /etc/apt/sources.list.d/docker.sources
+      apt-get update
+      apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      systemctl enable --now docker
+      install -d -m 0700 -o __ADMIN_USERNAME__ -g __ADMIN_USERNAME__ /opt/smart-schedule
+      docker compose version
+      touch /var/lib/smart-schedule-bootstrap-complete
+runcmd:
+  - [/usr/local/sbin/smart-schedule-bootstrap]

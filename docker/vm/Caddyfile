@@ -1,0 +1,6 @@
+{$APP_HOST} {$APP_HOST_ALIAS:} {
+    encode zstd gzip
+    # Caddy replaces untrusted forwarded headers by default. This is the only
+    # public path to Django; web:8000 is never published on the VM host.
+    reverse_proxy web:8000
+}

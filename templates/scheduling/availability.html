@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Availability · {{ availability.starts_on|date:'j M Y' }} | Smart Schedule{% endblock %}
+{% block page_name %}Availability{% endblock %}
+{% block content %}
+<section class="availability-page" aria-labelledby="availability-title">
+  <div class="page-heading"><div><h1 id="availability-title">Your work availability</h1><p class="page-description">Your working windows, with commitments subtracted. Share the hours you can offer without sharing your private schedule.</p></div><a class="btn btn-outline-secondary" href="{% url 'scheduling:working_windows' %}?date={{ availability.starts_on|date:'Y-m-d' }}">Manage working windows</a></div>
+  <div class="availability-toolbar">
+    <div class="week-navigation"><div class="week-arrows" role="group" aria-label="Navigate availability weeks">{% if availability.previous %}<a class="calendar-icon-button" href="?week={{ availability.previous|date:'Y-m-d' }}" aria-label="Previous availability week">{% include 'components/icon.html' with name='left' %}</a>{% endif %}{% if availability.next %}<a class="calendar-icon-button" href="?week={{ availability.next|date:'Y-m-d' }}" aria-label="Next availability week">{% include 'components/icon.html' with name='right' %}</a>{% endif %}</div><h2 class="week-range">{{ availability.starts_on|date:'j M' }} – {{ availability.ends_on|date:'j M Y' }}</h2><a class="calendar-today" href="{% url 'scheduling:availability' %}">This week</a></div>
+    <a class="text-link" href="{% url 'scheduling:week' %}?week={{ availability.starts_on|date:'Y-m-d' }}">View commitments{% include 'components/icon.html' with name='right' %}</a>
+  </div>
+  <form method="get" class="working-date-picker availability-date-picker"><label class="form-label" for="availability-week">Week containing</label><div><input class="form-control" type="date" name="week" id="availability-week" value="{{ availability.starts_on|date:'Y-m-d' }}" required><button class="btn btn-outline-secondary" type="submit">Show week</button></div></form>
+  <p><a class="text-link" href="{% url 'scheduling:shift_check' %}?date={{ availability.starts_on|date:'Y-m-d' }}">Have an offered shift? Check its full hours{% include 'components/icon.html' with name='right' %}</a></p>
+  {% if not availability.complete %}<aside class="alert alert-warning" aria-labelledby="availability-review-heading"><h2 class="h6" id="availability-review-heading">Some dates need review</h2><p class="mb-0">Availability on those dates is not confirmed. The copied text marks them as “Needs review”; other dates retain their confirmed hours. Use the review links below to correct the schedule.</p></aside>{% endif %}
+  {% if availability.complete and not availability.has_working_windows %}<aside class="availability-empty-note"><h2>No working hours in this week</h2><p>Availability is calculated only inside working windows. Set weekly windows or override a date to choose the hours you are willing to work.</p><a class="text-link" href="{% url 'scheduling:working_schedule_edit' %}?date={{ availability.starts_on|date:'Y-m-d' }}">Set weekly working windows{% include 'components/icon.html' with name='right' %}</a></aside>{% endif %}
+  <section class="availability-week" aria-labelledby="available-hours-heading">
+    <div class="availability-week-heading"><h2 id="available-hours-heading">Available hours</h2><p>{{ availability.total_label }} confirmed across {{ availability.available_day_count }} day{{ availability.available_day_count|pluralize }} · Halifax time</p></div>
+    {% for day in availability.days %}
+      <article class="availability-day{% if not day.complete %} availability-day-review{% endif %}" aria-labelledby="available-{{ day.date|date:'Y-m-d' }}">
+        <div class="availability-day-date"><h3 id="available-{{ day.date|date:'Y-m-d' }}">{{ day.date|date:'l' }}<span>{{ day.date|date:'j M' }}</span></h3>{% if day.elapsed_hours != 24 %}<p class="form-text">{{ day.elapsed_hours }}-hour day</p>{% endif %}</div>
+        <div class="availability-day-content">
+          <div class="availability-axis" aria-hidden="true">{% for mark in day.axis %}<span style="left: {{ mark.percent }}%;">{{ mark.label }}</span>{% endfor %}</div>
+          <div class="availability-lane" aria-hidden="true">{% for slot in day.slots %}<span class="availability-bar" style="left: {{ slot.left_percent }}%; width: {{ slot.width_percent }}%;"></span>{% endfor %}</div>
+          {% if not day.complete %}<p class="availability-state">Needs review — availability not confirmed</p><div class="working-row-actions">{% if day.review_working %}<a class="text-link" href="{% url 'scheduling:working_windows' %}?date={{ day.date|date:'Y-m-d' }}">Review working hours</a>{% endif %}{% if day.review_commitments %}<a class="text-link" href="{% url 'scheduling:week' %}?week={{ day.date|date:'Y-m-d' }}">Review commitments</a>{% endif %}</div>
+          {% else %}<ul class="availability-time-list">{% for slot in day.slots %}<li><time datetime="{{ slot.starts_at|date:'c' }}">{{ slot.start_label }}</time> – <time datetime="{{ slot.ends_at|date:'c' }}">{{ slot.end_label }}</time></li>{% empty %}<li class="availability-unavailable">No work availability</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </article>
+    {% endfor %}
+    <p class="form-text availability-gap-note">Every positive-length gap is shown. Travel buffers and minimum shift lengths are not applied.</p>
+  </section>
+  <section class="availability-sharing" aria-labelledby="share-availability-heading">
+    <div class="availability-share-heading"><div><h2 id="share-availability-heading">Share with an employer</h2><p class="page-description">Only dates and available hours are included. Commitment titles, sources, and account details stay private.</p></div><button class="btn btn-primary" type="button" data-copy-availability hidden>Copy availability</button></div>
+    <label class="form-label" for="employer-availability">Employer-facing text</label>
+    <textarea class="form-control availability-share-text" id="employer-availability" readonly rows="12" aria-describedby="availability-copy-help">{{ availability.share_text }}</textarea>
+    <p class="form-text" id="availability-copy-help">You can also select this text and copy it using your device. Availability is recalculated when you load a week; changes do not update copies already shared.</p>
+    <p class="availability-copy-status" role="status" aria-live="polite" data-copy-status></p>
+  </section>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/availability.js' %}" defer></script>{% endblock %}

@@ -1,7 +1,7 @@
-"""Private recurring schedule services; browser/API integration follows separately.
+"""Recurring integrity services, wrapped by recurring_workflow for browser writes.
 
-Writes preserve earlier dates and explicit exceptions. Conflict preflight is a
-separate integration step before recurring writes are exposed to users.
+Writes preserve earlier dates and explicit exceptions. The reviewed workflow
+adds conflict preflight and confirmation without changing these core interfaces.
 """
 
 from dataclasses import dataclass
@@ -16,6 +16,7 @@ from django.utils import timezone
 from .models import (
     CommitmentSource, OccurrenceException, RecurringSeries, RevisionWeekday, SeriesRevision,
 )
+from .locking import lock_schedule_owner
 from .time_resolution import ResolvedTime, resolve_local_time
 
 
@@ -120,6 +121,7 @@ def create_series(
     end_day_offset=0, ends_on=None, time_zone="America/Halifax",
 ):
     """Create a complete rule atomically; ends_on is the inclusive last start date."""
+    lock_schedule_owner(owner)
     source = _owned_source(owner=owner, source_id=source_id)
     if source.archived_at:
         raise ValidationError({"source": "Choose an active source for a new series."})
@@ -161,6 +163,7 @@ def revise_series(
     Earlier portions and every explicit exception retain their identity/content.
     The series' original source, zone, and lifetime are unchanged.
     """
+    lock_schedule_owner(owner)
     series = _owned_series(owner=owner, series_id=series_id, lock=True)
     _future_date(series, effective_from, "effective_from")
     if effective_from < series.starts_on or (
@@ -193,6 +196,7 @@ def revise_series(
 @transaction.atomic
 def end_series(*, owner, series_id, ends_before):
     """Shorten a series by original start date; never extend/reopen it."""
+    lock_schedule_owner(owner)
     series = _owned_series(owner=owner, series_id=series_id, lock=True)
     _future_date(series, ends_before, "ends_before")
     cutoff = max(ends_before, series.starts_on)
@@ -226,6 +230,7 @@ def _exception_target(series, original_start_date):
 
 @transaction.atomic
 def cancel_occurrence(*, owner, series_id, original_start_date):
+    lock_schedule_owner(owner)
     series = _owned_series(owner=owner, series_id=series_id, lock=True)
     exception = _exception_target(series, original_start_date)
     exception.kind = OccurrenceException.Kind.CANCEL
@@ -244,7 +249,8 @@ def reschedule_occurrence(
     replacement_title, starts_at, ends_at,
 ):
     """Store explicit aware instants, including a user's choice of the second fold."""
-    # Source first, series second: match source assignment lock order.
+    lock_schedule_owner(owner)
+    # Owner, source, then series: match the common schedule-write lock order.
     source = _owned_source(owner=owner, source_id=replacement_source_id)
     series = _owned_series(owner=owner, series_id=series_id, lock=True)
     exception = _exception_target(series, original_start_date)

@@ -2,8 +2,10 @@
 
 The recurring backend is implemented in `scheduling/recurrence.py`. Local clock
 resolution is isolated in `scheduling/time_resolution.py`. Neither module needs
-a new dependency or migration. Browser forms and conflict preflight remain the
-next integration increment; recurring writes are not exposed by routes or admin.
+a new dependency or migration. One-time save warnings now consume recurring
+reads. Browser forms now call the [reviewed workflow](recurring_workflow.md),
+which stages these writes and requires matching signed confirmation. Admin
+does not expose recurring writes.
 
 ## Entry points
 
@@ -54,9 +56,11 @@ archived source or their existing archived replacement source; a new source
 assignment requires an active source. Ownership is checked on both the series
 and replacement source.
 
-Writes use atomic transactions. Source assignment locks the source before the
-series. Revision, ending, and exception writes share a lock on the stable series
-row, including when no exception exists yet. That serializes cooperating writes;
+Writes use atomic transactions. One-time saves, recurring writes, and working
+schedule writes first acquire the common owner-row lock, then the source when
+assigning one, then the series. Revision,
+ending, and exception writes also lock the stable series row, including when
+no exception exists yet. That serializes cooperating writes;
 the PostgreSQL range exclusion is an additional defense against overlapping
 regular revisions. See [Django row locking](https://docs.djangoproject.com/en/6.1/ref/models/querysets/#select-for-update).
 
@@ -83,8 +87,8 @@ The query returns:
 - `issues`: original dates whose resolved intervals are zero-length or reversed,
   with endpoint metadata for review.
 - `complete`: false when any issue is present. Issues affect their local date(s),
-  including overnight carry-in. Future availability calculations must check this
-  and must not offer affected dates as complete.
+  including overnight carry-in. The [availability service](availability_services.md)
+  checks this and withholds affected dates from available intervals.
 
 A one-off reschedule or cancellation can resolve an issue. The existing one-time
 browser forms continue to reject ambiguous/missing input until frontend controls
@@ -99,7 +103,8 @@ Related rows are prefetched to avoid a separate query for each occurrence.
 
 ## Verification and next integration
 
-The complete PostgreSQL suite now passes 189 tests, including calendar coverage.
+The calendar increment passed 189 PostgreSQL tests; working availability passed
+261. One-time conflict integration brings the complete suite to 291 passing tests.
 Recurrence coverage includes
 atomic creation and rollback, earlier-week preservation, all-future edits,
 exception persistence, moves across weeks, inclusive last overnight occurrences,
@@ -115,10 +120,11 @@ The service tests require both edits/cancellations to complete through the paren
 lock and do not catch deadlock failures. PostgreSQL resolves a detected deadlock
 by aborting a transaction; see its [locking documentation](https://www.postgresql.org/docs/current/explicit-locking.html#LOCKING-DEADLOCKS).
 
-The [weekly calendar](weekly_calendar.md) now consumes the read service. Next,
-connect recurring and one-time occupied intervals to save conflict checks and
-confirmation, then expose recurring forms and visible clock-resolution/review
-messages. The current recurring write services enforce domain integrity; they
-do not perform conflict preflight or claim that an infinite future series is
-conflict-free. Working windows, availability, and the weekly calendar follow in
-the [development checklist](development_checklist.md).
+The [weekly calendar](weekly_calendar.md), availability service, and
+[one-time save warnings](conflict_services.md) now consume the read service.
+The lower-level recurring write services enforce domain integrity. Browser
+writes enter through `recurring_workflow.py` for conflict review and confirmation;
+the visible 12-month preview does not claim an infinite future series is
+conflict-free. Working-window configuration and the
+[availability screen](availability_screen.md) now consume these reads. Remaining
+demo tasks are in the [development checklist](development_checklist.md).

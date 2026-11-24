@@ -2,9 +2,14 @@
 
 Status: requirements DB1–DB17 and the schema/migration plan were confirmed in
 DB18. Source archival, the recurring database foundation, and recurring
-calculation/write services are implemented. Working-availability
-tables and recurring save-conflict/form integration remain scheduled increments. Existing
-user data is preserved.
+calculation/write services are implemented. Working-availability tables and
+calculation/write services are now implemented in migration 0004 and tested on
+separate PostgreSQL. Applying 0004 to the local application database remains
+pending while its installed service is stopped. One-time save warnings now
+include recurring occurrences. Recurring browser writes now use staged signed
+review, with the confirmed 12-month preview, through `recurring_workflow.py`.
+Working-window configuration and availability display/sharing are implemented.
+Existing user data is preserved.
 
 See the [project specification](project_spec.md), [glossary](../GLOSSARY.md),
 and [development checklist](development_checklist.md).
@@ -15,8 +20,9 @@ The scheduling entities now include User, CommitmentSource, the one-time
 Commitment, RecurringSeries, SeriesRevision, RevisionWeekday, and
 OccurrenceException. Source ownership determines commitment ownership. Source
 references are protected against deletion, and sources have nullable archival
-state. One-time deletion remains permanent. Working-availability tables are not
-implemented yet. Current forms reject missing/repeated local clock times.
+state. One-time deletion remains permanent. Working-availability tables now
+store dated schedules, windows, date overrides, and explicit override intervals.
+Current one-time forms reject missing/repeated local clock times.
 
 The proposal preserves those three entities and adds eight entities. Django's
 internal auth, permissions, sessions, and admin tables are additional framework
@@ -204,10 +210,10 @@ instances; do not describe this policy as universal calendar-standard behavior.
 | Parent records exist | Foreign keys. |
 | Source name per owner; weekday per revision; exception per series/date; override per owner/date | Unique constraints. |
 | Valid weekday/offset values, date bounds, positive actual intervals, cancellation/replacement field shape | Same-row checks and form/model validation. |
-| No overlapping revision periods per series/person | PostgreSQL exclusion constraints on parent equality and date-range overlap, using btree_gist; implemented for series revisions, working revisions pending. |
-| Preserve prior schedule revisions | Implemented atomic series write services; range exclusion alone does not preserve history. |
+| No overlapping revision periods per series/person | PostgreSQL exclusion constraints on parent equality and date-range overlap, using btree_gist; implemented for series and working revisions. |
+| Preserve prior schedule revisions | Implemented atomic series and working-schedule write services; range exclusion alone does not preserve history. |
 | Replacement source and series have the same owner | Implemented service validation; independent foreign keys do not enforce joined owner equality. |
-| Override child belongs inside its parent's local date | Service validation using the parent's date/zone; a plain row CHECK cannot join the header. |
+| Override child belongs inside its parent's local date | Implemented service validation using the parent's date/zone; a plain row CHECK cannot join the header. |
 | Valid automatic DST resolution | Application resolver, followed by UTC interval validation. |
 | Referenced sources cannot be erased accidentally | PROTECT on source references; archive through the normal application workflow. |
 
@@ -260,8 +266,9 @@ records, immutable audit logs, or generated-occurrence tables in this design.
 ## Migration and implementation sequence
 
 DB18 confirmed this sequence. Steps 1–4 are complete for the recurring
-foundation. Step 5's recurring services are implemented; conflict/frontend
-integration and subsequent working-availability tables remain pending:
+foundation. Step 5's recurring services and step 6's working-availability backend
+and their reviewed forms, conflict integration, and availability display/sharing
+are implemented. Remaining demonstration work is tracked in the checklist:
 
 1. Record the pre-migration state and take a local database backup. Use migration
    tests with representative legacy records; do not expose private user data in
@@ -316,7 +323,7 @@ and after migration and remained unchanged. New recurrence tables start empty.
 A private pg_dump backup was created and its archive listing validated before
 migration; it is a local recovery artifact, not part of the repository.
 
-All 189 PostgreSQL tests pass. The suite covers legacy migration preservation,
+The calendar increment passed 189 PostgreSQL tests. That suite covers legacy migration preservation,
 temporal exclusion (including concurrent inserts), payload/weekday/date constraints, deletion
 protection, and source archival behavior. New-source choices exclude archived
 sources; existing commitments can keep theirs. The archive service checks
@@ -326,15 +333,44 @@ correction, and logout; its temporary account and records were removed.
 
 Recurring services now implement atomic creation with a first revision and
 weekdays, future edits, series ending, occurrence validation/cancellation/
-rescheduling, DST resolution, and bounded occurrence expansion. No recurring
-writes are exposed through browser routes, APIs, or admin; conflict warnings
-and recurring forms must precede enabling those flows. The weekly calendar now
-reads recurring occurrences. Database checks
+rescheduling, DST resolution, and bounded occurrence expansion. Recurring
+browser routes now call the reviewed workflow, which stages and rolls back
+changes until a current signed preview is confirmed. Direct low-level writes
+remain internal; APIs and admin do not expose recurring changes. The weekly
+calendar reads recurring occurrences. Database checks
 do not enforce cross-row ownership, continuous revision coverage, immutable
 history, or at least one weekday; the services enforce these workflow rules.
 See [recurrence_services.md](recurrence_services.md) for interfaces and evidence.
 Archival currently has a service and admin visibility; user-facing source
 management controls remain to be added.
+
+The working-availability increment adds migration 0004, dated weekly patterns,
+full-date overrides, UTC interval subtraction, weekly results, and read-only
+proposed-shift checks. All 261 tests pass on temporary PostgreSQL, including
+schema constraints, migration preservation, concurrent writes, DST review, and
+the previous application tests. The system and migration-drift checks pass.
+The local application database still needs migration 0004 after its installed
+PostgreSQL service is started. See [availability_services.md](availability_services.md).
+
+The [recurring workflow](recurring_workflow.md) adds creation/edit/end and
+one-off change/cancel screens, signed conflict review, and calendar actions
+without another migration. All 333 tests pass, with separate live Chromium
+workflow and responsive checks. Migration 0004 remains unapplied to the stopped
+local application database; this verification used disposable PostgreSQL only.
+
+Working-window screens now call the same write services for weekly patterns,
+full-date overrides, and restoration. Owned read helpers supply a dated preview
+and history; clock resolution for date overrides remains in the service layer.
+All 383 tests pass, with desktop/phone/tablet and no-JavaScript browser checks.
+No additional migration or dependency was added. See
+[working_window_screens.md](working_window_screens.md).
+
+The [availability screen](availability_screen.md) adds a private-detail-free
+display projection and employer text without changing the schema or storing
+reports. All 411 tests pass, with live clipboard success/fallback, incomplete
+draft, DST, privacy, and responsive-browser checks. The user reported applying
+the existing application migration; verification continues to use disposable
+PostgreSQL without changing application data.
 
 The architectural rationale is recorded in the
 [accepted ADR](adr/0002-temporal-schedules-and-explicit-exceptions.md).

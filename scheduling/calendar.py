@@ -35,6 +35,8 @@ class CalendarEntry:
     ends_at: datetime
     kind: str
     commitment_id: int | None = None
+    series_id: int | None = None
+    original_start_date: date | None = None
     adjustments: tuple[str, ...] = ()
     has_conflict: bool = False
 
@@ -130,6 +132,7 @@ def calendar_for_user(*, owner, anchor=None):
         entries.append(CalendarEntry(
             ("recurring", *item.key), item.title, item.source, item.starts_at, item.ends_at,
             "Rescheduled" if item.is_replacement else "Weekly", adjustments=tuple(notes),
+            series_id=item.series_id, original_start_date=item.original_start_date,
         ))
     entries.sort(key=lambda item: (item.starts_at, item.ends_at, item.key))
     active = []

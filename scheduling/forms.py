@@ -33,7 +33,7 @@ class SourceForm(forms.ModelForm):
 class CommitmentForm(forms.ModelForm):
     confirm_conflicts = forms.BooleanField(
         required=False,
-        label="I understand these conflicts and want to save this commitment.",
+        label="I have reviewed these warnings and want to save this commitment.",
         widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
     )
 

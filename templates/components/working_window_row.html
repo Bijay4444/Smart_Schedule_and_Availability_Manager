@@ -1,0 +1,19 @@
+<fieldset class="window-row">
+  <legend class="window-row-title">{% if forloop %}Window {{ forloop.counter }}{% else %}New window{% endif %}</legend>
+  {% if row.non_field_errors %}<div class="alert alert-danger" role="alert">{{ row.non_field_errors }}</div>{% endif %}
+  <div class="window-row-fields{% if kind == 'date' %} date-window-fields{% endif %}">
+    {% if kind == 'weekly' %}{% include 'components/form_field.html' with field=row.weekday %}{% endif %}
+    {% include 'components/form_field.html' with field=row.start_time %}
+    {% include 'components/form_field.html' with field=row.end_time %}
+  </div>
+  {% if kind == 'weekly' %}<div class="form-check">{{ row.ends_next_day }}<label class="form-check-label" for="{{ row.ends_next_day.id_for_label }}">{{ row.ends_next_day.label }}</label></div>
+  {% else %}
+    <div class="form-check">{{ row.end_at_midnight }}<label class="form-check-label" for="{{ row.end_at_midnight.id_for_label }}">{{ row.end_at_midnight.label }}</label><div class="form-text">{{ row.end_at_midnight.help_text }}</div></div>
+    <details class="window-clock-options"{% if row.second_start.errors or row.second_end.errors %} open{% endif %}>
+      <summary>Clock-change options</summary><p class="form-text">Use these only when the fall-back clock repeats the entered time. Otherwise the first occurrence is used.</p>
+      <div class="form-check">{{ row.second_start }}<label class="form-check-label" for="{{ row.second_start.id_for_label }}">{{ row.second_start.label }}</label>{% if row.second_start.errors %}<div class="field-error" role="alert">{{ row.second_start.errors }}</div>{% endif %}</div>
+      <div class="form-check">{{ row.second_end }}<label class="form-check-label" for="{{ row.second_end.id_for_label }}">{{ row.second_end.label }}</label>{% if row.second_end.errors %}<div class="field-error" role="alert">{{ row.second_end.errors }}</div>{% endif %}</div>
+    </details>
+  {% endif %}
+  <div class="form-check window-delete">{{ row.DELETE }}<label class="form-check-label" for="{{ row.DELETE.id_for_label }}">Remove this window</label></div>
+</fieldset>
