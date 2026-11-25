@@ -113,3 +113,60 @@ Azure charge, and this pipeline adds no paid Azure registry, VM or database.
 Local validation: the full suite passed **565 tests**, with the opt-in Docker
 rehearsal skipped there and executed separately by CI. Release integrity/failure
 tests are in `tests/test_ci_release.py`; the workflow also passed `actionlint`.
+
+## Integration environment values (chat and social signup)
+
+This application runs on an Azure VM, not Azure App Service. Runtime values live
+in the existing private `/opt/smart-schedule/.env`. The release installer preserves
+that file and changes only `APP_IMAGE`. Adding a GitHub repository secret or an
+Azure Portal App Service setting alone will not configure this VM deployment.
+
+Configure these once in the VM file:
+
+- `GROQ_API_KEY` and `GROQ_MODEL` (default `openai/gpt-oss-20b`).
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+- `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
+
+The Compose files forward these values to Django. Deployment/backup scripts clear
+inherited integration variables so the VM's private file stays authoritative.
+No additional GitHub secrets are required under this arrangement. Rotate values
+in that private file when necessary; CI/CD retains them on subsequent releases.
+
+To securely copy the already configured integration values from your local `.env`
+using the saved owner SSH key and pinned host key:
+
+```bash
+# Presence-only report; values are never printed.
+uv run python scripts/sync_vm_environment.py \
+  --host schedule-4xebi5nxn46wq.northcentralus.cloudapp.azure.com
+
+# Back up the old remote .env privately and update only integration keys.
+uv run python scripts/sync_vm_environment.py \
+  --host schedule-4xebi5nxn46wq.northcentralus.cloudapp.azure.com --apply
+```
+
+The updater transmits values over SSH stdin rather than process arguments. It
+preserves the image, database credentials and Django secret, writes mode 0600,
+and coordinates with the CI deployment lock. Values containing unusual dotenv
+quoting are rejected for manual review without printing them. No containers are
+restarted by this command: the values are staged for the next CI/CD deployment.
+Use `--env-file`, `--identity`, `--known-hosts` or `--user` for other operator setups.
+
+SSH requires your current public IP in the existing owner allowlist. A timeout
+should be resolved by updating that rule to your current IP **/32**, not by opening
+port 22 to the internet. The runner's temporary `GitHubActionsSSH` rule is separate.
+
+After pushing the Compose/application changes to `main`, a successful pipeline
+recreates the app using these settings. If changing only environment values on an
+already current release, recreate the web service on the VM rather than merely
+restarting its existing container:
+
+```bash
+cd /opt/smart-schedule
+sudo docker compose --env-file .env -f compose.yaml up -d --wait --no-deps --force-recreate web
+```
+
+Check provider buttons and complete an actual consent flow after registering the
+exact [production callbacks](social_auth.md). Check chat with the fictional guest
+account and leave Groq billing on Free. Never print `docker compose config` output
+or container environment values in shared logs; use readiness booleans only.

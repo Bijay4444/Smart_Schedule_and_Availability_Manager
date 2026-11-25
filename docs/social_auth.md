@@ -148,3 +148,8 @@ button extended below 691px. Chromium checks passed at 1366×600, 1280×480,
 both provider buttons were inspected at laptop and phone sizes without horizontal
 overflow. The fix inherits the existing green design and does not change logout's
 CSRF-protected POST behavior.
+
+For secure transfer of locally configured provider values to the existing VM,
+see [integration environment management](ci_cd.md#integration-environment-values-chat-and-social-signup).
+The same procedure stages the chatbot's Groq values. No extra GitHub runtime
+secrets or Azure App Service settings are required for the current VM architecture.

@@ -54,7 +54,7 @@ def fake_docker(tmp_path, monkeypatch):
         'import json,os,sys\n'
         'args=sys.argv[1:]\n'
         'if os.environ.get("ASSERT_PRIVATE_ENV"):\n'
-        '    assert not any(k in os.environ for k in ["APP_HOST","APP_HOST_ALIAS","APP_IMAGE","DJANGO_SECRET_KEY","POSTGRES_PASSWORD"])\n'
+        '    assert not any(k in os.environ for k in ["APP_HOST","APP_HOST_ALIAS","APP_IMAGE","DJANGO_SECRET_KEY","POSTGRES_PASSWORD","GROQ_API_KEY","GROQ_MODEL","GOOGLE_CLIENT_ID","GOOGLE_CLIENT_SECRET","GITHUB_CLIENT_ID","GITHUB_CLIENT_SECRET"])\n'
         'with open(os.environ["DOCKER_CALLS"],"a") as f: f.write(json.dumps(args)+"\\n")\n'
         'if os.environ.get("FAIL_DOCKER_ON") and os.environ["FAIL_DOCKER_ON"] in " ".join(args): sys.exit(7)\n'
         'if "pg_dump" in " ".join(args): sys.stdout.buffer.write(b"PGDMP-test-backup")\n'
@@ -91,7 +91,7 @@ def test_successful_deployment_verifies_migrations_before_proxy_starts(bundle, f
 
 def test_deployment_does_not_inherit_local_secrets_or_host_overrides(bundle, fake_docker, monkeypatch):
     monkeypatch.setenv('ASSERT_PRIVATE_ENV', '1')
-    for name in ('APP_HOST', 'APP_HOST_ALIAS', 'APP_IMAGE', 'DJANGO_SECRET_KEY', 'POSTGRES_PASSWORD'):
+    for name in ('APP_HOST', 'APP_HOST_ALIAS', 'APP_IMAGE', 'DJANGO_SECRET_KEY', 'POSTGRES_PASSWORD', 'GROQ_API_KEY', 'GROQ_MODEL', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'):
         monkeypatch.setenv(name, 'development-value')
     subprocess.run(['sh', str(bundle / 'deploy.sh')], check=True, capture_output=True)
     subprocess.run(['sh', str(bundle / 'backup.sh')], check=True, capture_output=True)
