@@ -7,6 +7,7 @@ chmod 600 .env
 # The private bundle is authoritative even when the caller has loaded a
 # development environment. Compose normally prefers exported shell values.
 unset APP_HOST APP_HOST_ALIAS APP_IMAGE DJANGO_SECRET_KEY POSTGRES_PASSWORD
+unset GROQ_API_KEY GROQ_MODEL GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET
 if ! mkdir .deploy-lock 2>/dev/null; then
     echo 'A deployment may already be running. Inspect it before removing .deploy-lock.' >&2
     exit 1
