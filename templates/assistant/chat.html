@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Ask my schedule · Smart Schedule{% endblock %}
+{% block page_name %}Ask my schedule{% endblock %}
+{% block content %}
+<section class="chat-page" aria-labelledby="chat-heading">
+  <h1 id="chat-heading">Ask my schedule</h1>
+  <p>Get a quick answer without searching through your week.</p>
+  {% include 'assistant/conversation.html' %}
+</section>
+{% endblock %}

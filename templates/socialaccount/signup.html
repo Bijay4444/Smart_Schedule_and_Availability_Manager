@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Finish signing up | Smart Schedule{% endblock %}
+{% block content %}
+<section class="auth-card social-auth-card">
+  <h1>Finish creating your account</h1>
+  <p>Your provider sign-in worked. Please check the details below to finish.</p>
+  <p>If this email belongs to an existing account, sign in using that account’s original method. Accounts are not merged automatically.</p>
+  <form method="post" action="{% url 'socialaccount_signup' %}">
+    {% csrf_token %}{{ form.as_p }}{{ redirect_field }}
+    <button class="btn btn-primary" type="submit">Create my account</button>
+  </form>
+  <p><a href="{% url 'login' %}">Back to sign in</a></p>
+</section>
+{% endblock %}

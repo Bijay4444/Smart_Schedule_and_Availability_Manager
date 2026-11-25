@@ -13,6 +13,19 @@
     <section class="auth-card" aria-labelledby="login-heading">
       <h1 id="login-heading">Sign in to your schedule</h1>
       <p class="page-description">Make room for classes, work, and life.</p>
+      {% if social_providers %}
+        <div class="social-signin" aria-label="Sign in or create an account">
+          {% for provider in social_providers %}
+            <form method="post" action="{% url provider.login_url %}">
+              {% csrf_token %}
+              {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+              <button class="btn btn-outline-secondary" type="submit">Continue with {{ provider.label }}</button>
+            </form>
+          {% endfor %}
+        </div>
+        <p class="social-signin-note">New here? Continuing creates your private account.</p>
+        <p class="signin-divider">Or sign in with your username</p>
+      {% endif %}
       {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
       <form method="post" action="{% url 'login' %}">
         {% csrf_token %}

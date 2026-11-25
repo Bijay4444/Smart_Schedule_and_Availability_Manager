@@ -564,3 +564,27 @@ input, textarea { caret-color: var(--accent); }
   .window-row-fields { grid-template-columns: 1fr; gap: 0; }
   .working-date-picker > div { flex-wrap: wrap; }
 }
+
+/* Reserve the account footer; only navigation scrolls on short desktop screens. */
+@media (min-width: 1024px) {
+  .app-sidebar { height: 100dvh; min-height: 0; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  .app-sidebar > .brand { flex-shrink: 0; }
+  .app-sidebar .primary-nav { flex: 0 1 auto; min-height: 0; overflow-y: auto; align-content: start; scrollbar-width: thin; scrollbar-color: var(--accent) var(--surface-muted); }
+  .app-sidebar .primary-nav a { flex-shrink: 0; }
+  .sidebar-note { flex-shrink: 0; }
+  .sidebar-account { flex-shrink: 0; margin-top: auto; }
+}
+@media (min-width: 1024px) and (max-height: 740px) {
+  .app-sidebar { padding-top: 18px; }
+  .app-sidebar .brand { margin-bottom: 18px; }
+  .sidebar-note { display: none; }
+  .sidebar-account { padding-top: 12px; }
+}
+.social-signin { display: grid; gap: 12px; margin-top: 24px; }
+.social-signin .btn { width: 100%; }
+.social-signin-note { margin: 12px 0 20px; color: var(--muted); font-size: .8125rem; }
+.signin-divider { margin: 24px 0; color: var(--muted); font-size: .8125rem; }
+.social-auth-card { max-width: 32rem; margin-inline: auto; }
+.social-auth-card form { display: grid; gap: 16px; margin-top: 24px; }
+.social-auth-card input:not([type=hidden]) { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--control-radius); }
+.social-auth-card .errorlist { color: var(--danger); }

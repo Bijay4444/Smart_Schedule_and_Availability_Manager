@@ -6,6 +6,8 @@
 !manage.py
 !accounts/
 !accounts/**
+!assistant/
+!assistant/**
 !config/
 !config/**
 !core/

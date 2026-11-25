@@ -4,6 +4,7 @@ set -eu
 umask 077
 cd "$(dirname "$0")"
 unset APP_HOST APP_HOST_ALIAS APP_IMAGE DJANGO_SECRET_KEY POSTGRES_PASSWORD
+unset GROQ_API_KEY GROQ_MODEL GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET
 directory=${1:-backups}
 mkdir -p "$directory"
 temporary=$(mktemp "$directory/.backup.XXXXXX")

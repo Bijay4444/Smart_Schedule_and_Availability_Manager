@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Sign-in could not finish | Smart Schedule{% endblock %}
+{% block content %}
+<section class="auth-card social-auth-card">
+  <h1>Sign-in could not finish</h1>
+  <p>The provider could not complete sign-in, or the sign-in session expired. Please try again.</p>
+  <a class="btn btn-primary" href="{% url 'login' %}">Back to sign in</a>
+</section>
+{% endblock %}

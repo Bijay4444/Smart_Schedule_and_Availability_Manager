@@ -12,6 +12,12 @@ x-app: &app
     driver: json-file
     options: {max-size: 10m, max-file: "3"}
   environment:
+    GROQ_API_KEY: ${GROQ_API_KEY:-}
+    GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+    GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     DJANGO_SETTINGS_MODULE: config.django.production
     DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Generate a private VM environment}
     DJANGO_DEBUG: "false"
