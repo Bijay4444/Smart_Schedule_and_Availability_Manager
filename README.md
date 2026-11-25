@@ -356,3 +356,10 @@ See [the agreed scope](docs/project_spec.md) and [domain glossary](GLOSSARY.md).
 Setup references: [Django authentication](https://docs.djangoproject.com/en/6.1/topics/auth/default/),
 [Django PostgreSQL requirements](https://docs.djangoproject.com/en/6.1/ref/databases/#postgresql-notes),
 and [Ubuntu PostgreSQL installation](https://ubuntu.com/server/docs/how-to/databases/install-postgresql/).
+
+## Scheduling chatbot
+
+The read-only assistant is available at `/chat/` and in the **Ask my schedule**
+panel. Configure a Groq Free-tier API key in `.env` and restart Django to enable
+answers. ChatGPT Plus does not cover this API. See [chat setup and architecture](docs/chat_assistant.md)
+for configuration, privacy, free-quota limits, and the rehearsal checklist.

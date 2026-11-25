@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-11-25T01:13:35.847715+00:00",
+  "week": "2026-11-23",
+  "account": "schedule_demo",
+  "screens": {
+    "week.png": {
+      "url": "https://schedule.khadkabijay.com.np/week/?week=2026-11-23",
+      "scrollContainers": []
+    },
+    "recurring.png": {
+      "url": "https://schedule.khadkabijay.com.np/recurring/"
+    },
+    "availability.png": {
+      "url": "https://schedule.khadkabijay.com.np/availability/?week=2026-11-23",
+      "monday": "Monday\n23 Nov\n00:00\n06:00\n12:00\n18:00\n24:00\n08:00 \u2013 10:00\n14:00 \u2013 20:00"
+    },
+    "shift-result.png": {
+      "url": "https://schedule.khadkabijay.com.np/check-shift/#shift-result-heading",
+      "heading": "Not available for the full shift",
+      "saved": false
+    },
+    "github-run.png": {
+      "url": "https://github.com/Bijay4444/Smart_Schedule_and_Availability_Manager/actions/runs/45514354911"
+    }
+  }
+}

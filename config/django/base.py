@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
+    "rest_framework",
+    "assistant",
     "accounts.apps.AccountsConfig",
     "core.apps.CoreConfig",
     "scheduling.apps.SchedulingConfig",
@@ -133,3 +135,7 @@ WHITENOISE_USE_FINDERS = False
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Import integration settings from config.settings here when integrations are added.
+
+# Read-only chatbot: use a Groq Free-tier account; there is no paid fallback.
+GROQ_API_KEY = env.str("GROQ_API_KEY", default="").strip()
+GROQ_MODEL = env.str("GROQ_MODEL", default="openai/gpt-oss-20b")

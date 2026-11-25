@@ -291,7 +291,7 @@ Later APIs must use Django REST Framework and can reuse those services.
 Reduce the effort needed to maintain a schedule, aiming for entry that feels
 as straightforward as writing on a calendar or paper.
 
-The first enhancement after the core demonstration is speech/natural-language
+A later enhancement is speech/natural-language
 entry: interpret a request into a draft commitment that the user confirms before
 saving. Scheduling services, rather than the LLM, calculate conflicts and
 availability. The speech provider, model, cost, and access mechanism have not
@@ -367,3 +367,21 @@ the agreed rules. These are expected outcomes, not completed test results.
 | Navigate weeks and click a day | The displayed week changes and the entry form uses the selected date. |
 | Two commitments have the same source | They use the same source color and readable labels. |
 | Device requests reduced motion | Animation respects that preference. |
+
+## Read-only chatbot increment (2026-11-25)
+
+The user selected a scheduling question-answering assistant before natural-language
+writes: a panel on authenticated pages plus a dedicated chat page, sharing login
+session context and retrieving fresh scheduling data through owner-scoped tools.
+Use Groq Free tier for the zero-additional-cost demo; ChatGPT Plus does not include
+API credits. Keep answers read-only, reuse scheduling services for calculations,
+and preserve Halifax rules and Needs review states. No paid fallback, voice, writes,
+or Google Calendar integration is included. Relevant data goes to the provider.
+See [chat assistant](chat_assistant.md) for setup, architecture, verification, and
+remaining live-provider/browser checks.
+
+Availability chat reports now resolve common relative dates and month-name/ISO
+ranges in Python and render the report directly from scheduling results. Next week
+means the next Monday–Sunday; two explicit endpoints are honored as a date range.
+Omitted years default to the current Halifax year, and genuinely reversed or
+contradictory dates need clarification. The limit remains 31 inclusive dates.

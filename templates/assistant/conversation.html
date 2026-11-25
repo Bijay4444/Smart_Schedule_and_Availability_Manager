@@ -1,0 +1,19 @@
+<div class="schedule-chat" data-chat-url="{% url 'assistant:conversation' %}">
+  <p class="chat-intro">Ask about commitments, work availability, or a shift you’re considering. Answers use your saved schedule in Halifax time. Relevant details are sent to Groq.</p>
+  <div class="chat-examples" aria-label="Example questions">
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-chat-example>What do I have tomorrow?</button>
+    <button type="button" class="btn btn-outline-secondary btn-sm" data-chat-example>What is my work availability next week?</button>
+  </div>
+  <div class="chat-messages" role="log" aria-label="Conversation" aria-live="polite" tabindex="0"></div>
+  <p class="chat-status" role="status" aria-live="polite"></p>
+  <form class="chat-form">
+    {% csrf_token %}
+    <label for="chat-message">Your scheduling question</label>
+    <textarea id="chat-message" name="message" rows="3" maxlength="2000" required placeholder="Can I work Friday from 4 PM to 10 PM?"></textarea>
+    <div class="chat-actions">
+      <button class="btn btn-primary" type="submit">Ask</button>
+      <button class="btn btn-outline-secondary" type="button" data-chat-clear>Clear chat</button>
+    </div>
+  </form>
+  <noscript><p>Chat needs JavaScript. Your calendar and availability pages still work without it.</p></noscript>
+</div>

@@ -8,6 +8,7 @@
     <link rel="preload" href="{% static 'fonts/instrument-sans-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link href="{% static 'css/app.css' %}" rel="stylesheet">
+    {% if user.is_authenticated %}<link href="{% static 'css/chat.css' %}" rel="stylesheet">{% endif %}
   </head>
   <body class="{% if user.is_authenticated %}app-layout{% else %}auth-layout{% endif %}">
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -17,6 +18,7 @@
         <aside class="app-sidebar" aria-label="Workspace">
           <a class="brand" href="{% url 'home' %}">{% include 'components/icon.html' with name='calendar' %}<span>Smart Schedule</span></a>
           <nav class="primary-nav" aria-label="Main navigation">
+            <a href="{% url 'assistant:chat' %}"{% if route == 'chat' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='calendar' %}<span>Ask my schedule</span></a>
             <a href="{% url 'home' %}"{% if route == 'home' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='home' %}<span>Overview</span></a>
             <a href="{% url 'scheduling:week' %}"{% if route == 'week' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='calendar' %}<span>Your week</span></a>
             <a href="{% url 'scheduling:availability' %}"{% if route == 'availability' %} aria-current="page"{% endif %}>{% include 'components/icon.html' with name='clock' %}<span>Availability</span></a>
@@ -56,6 +58,17 @@
           </main>
         </div>
     {% if user.is_authenticated %}</div>{% endif %}
+    {% if user.is_authenticated %}
+      {% if request.resolver_match.url_name != 'chat' %}
+        <button type="button" class="btn btn-primary chat-launcher" data-chat-open aria-haspopup="dialog" aria-controls="schedule-chat-panel" hidden>Ask my schedule</button>
+        <dialog id="schedule-chat-panel" class="chat-panel" aria-labelledby="chat-panel-heading">
+          <div class="chat-panel-header"><h2 id="chat-panel-heading">Ask my schedule</h2><button type="button" class="btn btn-outline-secondary btn-sm" data-chat-close>Close</button></div>
+          <p><a href="{% url 'assistant:chat' %}">Open full chat page</a></p>
+          {% include 'assistant/conversation.html' %}
+        </dialog>
+      {% endif %}
+      <script src="{% static 'js/chat.js' %}" defer></script>
+    {% endif %}
     {% block scripts %}{% endblock %}
   </body>
 </html>
