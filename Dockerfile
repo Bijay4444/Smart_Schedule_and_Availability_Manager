@@ -18,6 +18,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-install-project
 
 COPY accounts ./accounts
+COPY assistant ./assistant
 COPY config ./config
 COPY core ./core
 COPY scheduling ./scheduling

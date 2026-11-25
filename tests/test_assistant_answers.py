@@ -105,3 +105,22 @@ def test_incomplete_report_never_confirms_dst_review_date(owner, source, monkeyp
     assert 'Draft' in text
     assert 'Total available time' not in text
     assert 'Private class' not in text
+
+
+def test_date_only_followup_keeps_explicit_year_from_user_context(owner):
+    history = [{'role': 'user', 'content': 'my availability from dec 1 2027 to dec 7 2027'},
+               {'role': 'assistant', 'content': 'Work availability for December 2027'}]
+    text = answer(owner=owner, history=history, message='from dec 8 to dec 14')
+    assert 'Wednesday 8 December 2027' in text
+    assert '2026' not in text
+
+
+@pytest.mark.parametrize('message', [
+    'my availability this week from dec 7 to dec 13',
+    'my availability last week from dec 7 to dec 13',
+    'my availability today november 27',
+    'my availability tomorrow november 28',
+])
+def test_all_contradictory_relative_dates_require_clarification(owner, message):
+    text = answer(owner=owner, history=[], message=message)
+    assert 'Which range' in text

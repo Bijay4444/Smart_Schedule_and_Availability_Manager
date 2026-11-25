@@ -131,3 +131,12 @@ def test_external_next_url_is_not_followed(client, configured):
 
 def test_no_local_signup_route(client):
     assert client.get('/accounts/signup/').status_code == 404
+
+
+@pytest.mark.parametrize('provider', ['google', 'github'])
+@pytest.mark.parametrize('method', ['get', 'post'])
+def test_unsupported_account_linking_is_rejected_before_oauth(client, owner, configured, provider, method):
+    client.force_login(owner)
+    response = getattr(client, method)(reverse(f'{provider}_login'), {'process': 'connect'})
+    assert response.status_code == 400
+    assert not SocialAccount.objects.filter(user=owner).exists()

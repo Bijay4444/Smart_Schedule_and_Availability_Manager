@@ -1,12 +1,15 @@
+import secrets
+
 import pytest
 
 from scripts.sync_vm_environment import KEYS, quote_value, remote_program, update_text
 
 
 def test_update_preserves_database_and_django_settings_and_quotes_dollars():
-    old = 'APP_IMAGE=smart-schedule:original\nDJANGO_SECRET_KEY=keep\nPOSTGRES_PASSWORD=keep-too\nGROQ_API_KEY=old\n'
+    database_value = secrets.token_urlsafe(24)
+    old = f'APP_IMAGE=smart-schedule:original\nDJANGO_SECRET_KEY=keep\nPOSTGRES_PASSWORD={database_value}\nGROQ_API_KEY=old\n'
     new = update_text(old, {'GROQ_API_KEY': 'value$literal', 'GOOGLE_CLIENT_ID': 'id'})
-    assert new.startswith('APP_IMAGE=smart-schedule:original\nDJANGO_SECRET_KEY=keep\nPOSTGRES_PASSWORD=keep-too\n')
+    assert new.startswith(f'APP_IMAGE=smart-schedule:original\nDJANGO_SECRET_KEY=keep\nPOSTGRES_PASSWORD={database_value}\n')
     assert "GROQ_API_KEY='value$literal'\n" in new
     assert "GOOGLE_CLIENT_ID='id'\n" in new
     assert new.count('GROQ_API_KEY=') == 1
@@ -46,7 +49,8 @@ def test_remote_program_updates_privately_and_creates_backup(tmp_path, monkeypat
     import stat
     import sys
     target = tmp_path / '.env'
-    original = 'APP_IMAGE=keep-image\nDJANGO_SECRET_KEY=keep-secret\nPOSTGRES_PASSWORD=keep-password\n'
+    django_value, database_value = secrets.token_urlsafe(24), secrets.token_urlsafe(24)
+    original = f'APP_IMAGE=keep-image\nDJANGO_SECRET_KEY={django_value}\nPOSTGRES_PASSWORD={database_value}\n'
     target.write_text(original)
     target.chmod(0o600)
     monkeypatch.setattr(sys, 'stdin', StringIO(json.dumps({'apply': True, 'values': {'GROQ_API_KEY': 'private-value$literal'}})))
@@ -55,7 +59,8 @@ def test_remote_program_updates_privately_and_creates_backup(tmp_path, monkeypat
     exec(compile(program, '<remote updater>', 'exec'), {})
     output = capsys.readouterr().out
     assert 'private-value' not in output
-    assert 'keep-secret' not in output
+    assert django_value not in output
+    assert database_value not in output
     assert json.loads(output)['configured']['GROQ_API_KEY'] is True
     assert target.read_text().startswith(original)
     assert "GROQ_API_KEY='private-value$literal'" in target.read_text()

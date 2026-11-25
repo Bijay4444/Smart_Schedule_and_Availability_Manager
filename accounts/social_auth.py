@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.http import HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 
 
@@ -20,6 +21,10 @@ def social_providers(request):
 
 @require_http_methods(["GET", "POST"])
 def provider_login(request, provider, callback=False):
+    # Account linking is outside this app's public OAuth surface. Allauth otherwise
+    # accepts process=connect and would redirect to an unexposed connections page.
+    if any(data.get("process", "login") != "login" for data in (request.GET, request.POST)):
+        return HttpResponseBadRequest("Only sign-in and new-account signup are supported.")
     if not provider_enabled(provider):
         messages.info(request, "That sign-in provider is not available yet. Please use another sign-in method.")
         return redirect("login")

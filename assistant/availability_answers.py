@@ -35,14 +35,44 @@ def week_dates(today, offset=0):
     return first, first + timedelta(days=6)
 
 
-def resolve_dates(text, today):
+def relative_dates(text, today):
+    periods = []
+    for phrase, offset in [('next week', 1), ('this week', 0), ('last week', -1)]:
+        if re.search(r'\b' + phrase + r'\b', text):
+            periods.append(week_dates(today, offset))
+    for phrase, offset in [('tomorrow', 1), ('yesterday', -1), ('today', 0)]:
+        if re.search(r'\b' + phrase + r'\b', text):
+            day = today + timedelta(days=offset)
+            periods.append((day, day))
+    if len(periods) > 1:
+        raise ValidationError('You mentioned more than one period. Which date range should I use?')
+    return periods[0] if periods else None
+
+
+def conversation_year(history):
+    """Use only the user's relevant date context, never a model-generated year."""
+    for turn in reversed(history):
+        if turn['role'] != 'user':
+            continue
+        text = turn['content'].lower()
+        if not AVAILABILITY.search(text) and set(re.findall(r'[a-z]+', DATE.sub('', text))) - FOLLOWUP_WORDS:
+            break
+        years = [int(m['iso'][:4]) if m['iso'] else int(m['year'])
+                 for m in DATE.finditer(text) if m['iso'] or m['year']]
+        if years:
+            return years[-1]
+    return None
+
+
+def resolve_dates(text, today, *, context_year=None):
     """Return an inclusive range, or None for expressions needing interpretation."""
+    relative = relative_dates(text, today)
     matches = list(DATE.finditer(text))
     if matches:
         if len(matches) > 2:
             return None
         explicit_years = [int(m['iso'][:4]) if m['iso'] else int(m['year']) for m in matches if m['iso'] or m['year']]
-        default_year = explicit_years[0] if explicit_years else today.year
+        default_year = explicit_years[0] if explicit_years else context_year or today.year
         try:
             dates = [date.fromisoformat(m['iso']) if m['iso'] else date(
                 int(m['year']) if m['year'] else default_year, MONTHS[m['month']], int(m['day'])
@@ -55,21 +85,11 @@ def resolve_dates(text, today):
             first, last = week_dates(dates[0])
         else:
             first = last = dates[0]
-        if re.search(r'\bnext week\b', text) and (first, last) != week_dates(today, 1):
-            next_first, next_last = week_dates(today, 1)
-            raise ValidationError(f'You gave {label(first)} to {label(last)}, but next week is {label(next_first)} to {label(next_last)}. Which range should I use?')
+        if relative is not None and (first, last) != relative:
+            relative_first, relative_last = relative
+            raise ValidationError(f'You gave {label(first)} to {label(last)}, but the relative period is {label(relative_first)} to {label(relative_last)}. Which range should I use?')
         return first, last
-    relative_phrases = [phrase for phrase in ('next week', 'this week', 'last week', 'today', 'tomorrow', 'yesterday') if re.search(r'\b' + phrase + r'\b', text)]
-    if len(relative_phrases) > 1:
-        raise ValidationError('You mentioned more than one period. Which date range should I use?')
-    for phrase, offset in [('next week', 1), ('this week', 0), ('last week', -1)]:
-        if re.search(r'\b' + phrase + r'\b', text):
-            return week_dates(today, offset)
-    for phrase, offset in [('tomorrow', 1), ('yesterday', -1), ('today', 0)]:
-        if re.search(r'\b' + phrase + r'\b', text):
-            day = today + timedelta(days=offset)
-            return day, day
-    return None
+    return relative
 
 
 def validate_range(first, last):
@@ -141,7 +161,7 @@ def direct_availability_answer(*, owner, history, message, today):
     if not requested:
         return None
     try:
-        dates = resolve_dates(text, today)
+        dates = resolve_dates(text, today, context_year=conversation_year(history))
         if dates is None:
             return None
         return availability_answer(owner=owner, first=dates[0], last=dates[1])

@@ -120,7 +120,7 @@ look unsupported. A stronger prompt alone would not make date arithmetic reliabl
 `assistant/availability_answers.py` now resolves straightforward availability
 reports in Python: today/tomorrow/yesterday, this/next/last Monday–Sunday week,
 ISO dates, and English month-name ranges. Omitted years use the current Halifax
-year (or an explicit year in the range). Reversed ranges and contradictory date
+year (or an explicit year in the range or relevant user conversation context). Reversed ranges and contradictory date
 instructions receive a specific clarification. Date-only follow-ups can continue
 an availability request, while unrelated questions and source/time-qualified
 requests continue through the model. This is a conservative supported vocabulary,
@@ -138,3 +138,9 @@ next week, the full Nov 25–Dec 25 range, date-only follow-ups, and the actual 
 label for Nov 27, 2026. Additional cases cover overnight splitting, DST review,
 year boundaries and qualified requests. All 26 assistant tests pass. No model
 upgrade, added dependency, or extra provider cost is required for these fixes.
+
+PR review corrections preserve explicit years in date-only follow-ups and check
+all supported relative periods for contradictions with explicit dates. OAuth
+login endpoints reject unsupported account-linking requests. The container build
+now includes the assistant package in both its context allowlist and source COPY;
+an isolated source-tree test reproduces Django startup and static collection.
