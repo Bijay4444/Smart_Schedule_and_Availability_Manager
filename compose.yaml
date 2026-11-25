@@ -12,6 +12,10 @@ x-app: &app
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]
   environment:
+    GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+    GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     DJANGO_SETTINGS_MODULE: config.django.production
     DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env.docker}
     DJANGO_DEBUG: "false"

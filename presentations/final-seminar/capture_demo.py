@@ -23,7 +23,10 @@ BROWSER = os.environ.get('SLIDES_BROWSER_PATH', '/home/bijay/.cache/ms-playwrigh
 
 def main():
     ASSETS.mkdir(exist_ok=True)
+    previous = json.loads((ASSETS / 'manifest.json').read_text()) if (ASSETS / 'manifest.json').exists() else {}
     manifest = {'capturedAt': datetime.now(UTC).isoformat(), 'week': WEEK, 'account': 'schedule_demo', 'screens': {}}
+    if 'localUpdates' in previous:
+        manifest['localUpdates'] = previous['localUpdates']
     with sync_playwright() as driver:
         browser = driver.chromium.launch(executable_path=BROWSER)
         context = browser.new_context(viewport={'width': 1600, 'height': 1050}, device_scale_factor=1.5, reduced_motion='reduce')
@@ -31,7 +34,7 @@ def main():
         page.goto(SITE + '/accounts/login/', wait_until='networkidle')
         page.locator('[name=username]').fill('schedule_demo')
         page.locator('[name=password]').fill('DemoSchedule!2026')
-        page.locator('button[type=submit]').click()
+        page.get_by_role('button', name='Sign in', exact=True).click()
         page.wait_for_url(lambda url: '/accounts/login/' not in str(url))
 
         def settled(path):

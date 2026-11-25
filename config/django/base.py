@@ -49,6 +49,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.github",
     "rest_framework",
     "assistant",
     "accounts.apps.AccountsConfig",
@@ -63,6 +68,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -78,6 +84,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "accounts.social_auth.social_providers",
             ],
         },
     },
@@ -139,3 +146,41 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Read-only chatbot: use a Groq Free-tier account; there is no paid fallback.
 GROQ_API_KEY = env.str("GROQ_API_KEY", default="").strip()
 GROQ_MODEL = env.str("GROQ_MODEL", default="openai/gpt-oss-20b")
+
+# Keep existing username/password login and use allauth for provider identities.
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email", "password1*", "password2*"]
+# Social identities establish login; no SMTP setup or password is needed for signup.
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = False
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = False
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_STORE_TOKENS = False
+SOCIALACCOUNT_REQUESTS_TIMEOUT = 10
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": env.str("GOOGLE_CLIENT_ID", default="").strip(),
+            "secret": env.str("GOOGLE_CLIENT_SECRET", default="").strip(),
+            "key": "",
+        },
+        "SCOPE": ["openid", "profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+        "OAUTH_PKCE_ENABLED": True,
+    },
+    "github": {
+        "APP": {
+            "client_id": env.str("GITHUB_CLIENT_ID", default="").strip(),
+            "secret": env.str("GITHUB_CLIENT_SECRET", default="").strip(),
+            "key": "",
+        },
+        "SCOPE": ["user:email"],
+    },
+}

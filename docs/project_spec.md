@@ -385,3 +385,14 @@ ranges in Python and render the report directly from scheduling results. Next we
 means the next Monday–Sunday; two explicit endpoints are honored as a date range.
 Omitted years default to the current Halifax year, and genuinely reversed or
 contradictory dates need clarification. The limit remains 31 inclusive dates.
+
+## Social signup and logout access (2026-11-25)
+
+The user requested Google and GitHub OAuth signup for demo participants, alongside
+existing password login. First provider sign-in creates a private empty account;
+returning identities reuse it. Credentials come from private environment values.
+Email matches never automatically merge accounts; provider linking, local password
+signup, password recovery and Google Calendar access are outside this increment.
+This supersedes the earlier deferral of signup for the demo. The desktop sidebar
+must keep Sign out visible on short laptop screens, scrolling navigation as needed.
+See [social authentication](social_auth.md) for required provider setup and callbacks.

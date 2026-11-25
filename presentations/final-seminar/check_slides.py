@@ -31,7 +31,10 @@ def main():
         page.evaluate("localStorage.clear()")
         page.reload()
         page.evaluate("document.fonts.ready")
-        assert page.locator(".slide").count() == 10
+        assert page.locator(".slide").count() == 11
+        assert "Python owns the calendar" in page.locator(".slide").nth(5).text_content()
+        assert "Live OAuth setup pending" in page.locator(".slide").nth(9).text_content()
+        assert "596 passed" in page.locator(".slide").nth(6).text_content()
         assert page.evaluate("[...document.querySelectorAll('.slide')].reduce((n,s)=>n+Number(s.dataset.seconds),0)") == 350
         assert page.evaluate("document.fonts.check('40px Instrument')")
         assert page.evaluate("[...document.querySelectorAll('.slide img')].every(img=>img.src.startsWith('data:'))")
@@ -43,7 +46,7 @@ def main():
         # Fixed stage must stay proportional and contain its visible text at both sizes.
         for width, height in [(1280, 720), (390, 844)]:
             page.set_viewport_size({"width": width, "height": height})
-            for index in range(10):
+            for index in range(11):
                 page.evaluate("i=>presentation.showSlide(i)", index)
                 page.wait_for_timeout(250)
                 assert page.locator(".slide.active").count() == 1
@@ -71,6 +74,15 @@ def main():
                             if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>2&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>2)messages.push(group.className+': overlapping panels');
                         }
                     }
+                    for(const note of slide.querySelectorAll('.note-line')){
+                        for(const figure of slide.querySelectorAll('figure')){
+                            const range=document.createRange();range.selectNodeContents(note);
+                            const b=figure.getBoundingClientRect();
+                            for(const a of range.getClientRects()){
+                                if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>2&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>2)messages.push('Note text overlaps screenshot/caption');
+                            }
+                        }
+                    }
                     return messages;
                 }""")
                 assert not overlaps, f'Slide {index+1}: {overlaps}'
@@ -80,17 +92,17 @@ def main():
         page.set_viewport_size({"width": 1280, "height": 720})
         page.keyboard.press("Home")
         page.keyboard.press("ArrowRight")
-        assert page.locator("#count").inner_text() == "2 / 10"
+        assert page.locator("#count").inner_text() == "2 / 11"
         page.keyboard.press("PageDown")
-        assert page.locator("#count").inner_text() == "3 / 10"
+        assert page.locator("#count").inner_text() == "3 / 11"
         page.keyboard.press("Space")
-        assert page.locator("#count").inner_text() == "4 / 10"
+        assert page.locator("#count").inner_text() == "4 / 11"
         page.keyboard.press("PageUp")
-        assert page.locator("#count").inner_text() == "3 / 10"
+        assert page.locator("#count").inner_text() == "3 / 11"
         page.keyboard.press("End")
         assert page.locator("#next").is_disabled()
         page.keyboard.press("ArrowRight")
-        assert page.locator("#count").inner_text() == "10 / 10"
+        assert page.locator("#count").inner_text() == "11 / 11"
         page.keyboard.press("Home")
         assert page.locator("#previous").is_disabled()
         # Notes live only in a separate offline presenter window. Both windows
@@ -103,19 +115,19 @@ def main():
         presenter.locator("#notes-copy").wait_for()
         assert "Private Presenter" in presenter.title()
         assert presenter.evaluate("document.documentElement.scrollWidth <= innerWidth")
-        assert "0:00–0:20" in presenter.locator("#notes-budget").inner_text()
+        assert "0:00–0:15" in presenter.locator("#notes-budget").inner_text()
         assert "Smart Schedule started" in presenter.locator("#notes-copy").inner_text()
         assert page.locator("#notes-panel, #notes-copy").count() == 0
         assert page.locator(".speaker-notes:visible").count() == 0
         assert "Share only the original slides window" in presenter.locator("header").inner_text()
         presenter.get_by_role("button", name="Next →").click()
-        assert page.locator("#count").inner_text() == "2 / 10"
+        assert page.locator("#count").inner_text() == "2 / 11"
         assert "The original problem" in presenter.locator("#notes-copy").inner_text()
         assert "Up next: 3." in presenter.locator("#next-slide").inner_text()
         presenter.keyboard.press("PageDown")
-        assert page.locator("#count").inner_text() == "3 / 10"
+        assert page.locator("#count").inner_text() == "3 / 11"
         page.keyboard.press("End")
-        assert presenter.locator("#presenter-count").inner_text() == "10 / 10"
+        assert presenter.locator("#presenter-count").inner_text() == "11 / 11"
         assert presenter.locator("#presenter-next").is_disabled()
         assert "Final slide" in presenter.locator("#next-slide").inner_text()
         presenter.keyboard.press("Home")
@@ -163,7 +175,7 @@ def main():
         title = page.locator(".slide.active h1")
         title.fill("Smart Schedule — rehearsal")
         title.press("ArrowRight")
-        assert page.locator("#count").inner_text() == "1 / 10"
+        assert page.locator("#count").inner_text() == "1 / 11"
         with page.expect_download() as download_info:
             page.keyboard.press("Control+s")
         downloaded = CAPTURES / "edited-presentation.html"
@@ -188,25 +200,25 @@ def main():
         page.mouse.move(600, 400)
         page.mouse.wheel(0, 100)
         page.wait_for_timeout(100)
-        assert page.locator("#count").inner_text() == "2 / 10"
+        assert page.locator("#count").inner_text() == "2 / 11"
         page.evaluate("""()=>{
             const stage=document.getElementById('deckStage');
             stage.dispatchEvent(new TouchEvent('touchstart',{touches:[new Touch({identifier:1,target:stage,clientX:250,clientY:200})]}));
             stage.dispatchEvent(new TouchEvent('touchend',{changedTouches:[new Touch({identifier:1,target:stage,clientX:100,clientY:205})]}));
         }""")
-        assert page.locator("#count").inner_text() == "3 / 10"
+        assert page.locator("#count").inner_text() == "3 / 11"
         page.goto((ROOT / "index.html").as_uri() + "#5")
-        assert page.locator("#count").inner_text() == "5 / 10"
+        assert page.locator("#count").inner_text() == "5 / 11"
         assert not errors, errors
 
         # Print honors CSS page size and reveals every slide without presenter UI.
         page.keyboard.press("Home")
         page.pdf(path=str(ROOT / "smart-schedule-final.pdf"), print_background=True, prefer_css_page_size=True)
         pdf = (ROOT / "smart-schedule-final.pdf").read_bytes()
-        assert len(re.findall(rb"/Type /Page\b", pdf)) == 10, "PDF must contain ten pages"
+        assert len(re.findall(rb"/Type /Page\b", pdf)) == 11, "PDF must contain eleven pages"
         assert b"/MediaBox [0 0 1440 810]" in pdf, "PDF must stay widescreen"
         browser.close()
-        print(json.dumps({"result": "PASS", "slides": 10, "viewports": ["1280×720", "390×844"], "private_presenter": "PASS", "script_budget_seconds": 350, "pdf_pages": 10, "browser_errors": errors, "screenshots": str(CAPTURES)}, indent=2))
+        print(json.dumps({"result": "PASS", "slides": 11, "viewports": ["1280×720", "390×844"], "private_presenter": "PASS", "script_budget_seconds": 350, "pdf_pages": 11, "browser_errors": errors, "screenshots": str(CAPTURES)}, indent=2))
 
 
 if __name__ == "__main__":

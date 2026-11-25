@@ -22,5 +22,21 @@
     "github-run.png": {
       "url": "https://github.com/Bijay4444/Smart_Schedule_and_Availability_Manager/actions/runs/45514354911"
     }
+  },
+  "localUpdates": {
+    "capturedAt": "2026-11-25T15:28:19.483873+00:00",
+    "chat.png": {
+      "source": "Local rendered app with actual scheduling-service response",
+      "account": "schedule_demo",
+      "question": "What is my work availability on 2026-11-23?",
+      "answer": "Work availability: Monday 23 November 2026 \u2013 Monday 23 November 2026\nHalifax time (America/Halifax).\n\nMonday 23 November 2026: 09:00\u201310:00; 12:00\u201319:00\n\nTotal available time: 8h",
+      "modelCalled": false,
+      "databaseChanges": "rolled back"
+    },
+    "social-login.png": {
+      "source": "Local rendered app with placeholder provider configuration",
+      "liveOAuthVerified": false,
+      "credentialsIncluded": false
+    }
   }
 }

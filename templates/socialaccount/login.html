@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Continue with {{ provider.name }} | Smart Schedule{% endblock %}
+{% block content %}
+<section class="auth-card social-auth-card">
+  <h1>Continue with {{ provider.name }}</h1>
+  <p>Sign in or create your private Smart Schedule account.</p>
+  <form method="post">{% csrf_token %}{{ redirect_field }}<button class="btn btn-primary" type="submit">Continue with {{ provider.name }}</button></form>
+  <p><a href="{% url 'login' %}">Back to sign in</a></p>
+</section>
+{% endblock %}

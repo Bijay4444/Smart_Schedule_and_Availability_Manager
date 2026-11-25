@@ -5,6 +5,7 @@ description = "A scheduling and work availability manager."
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "Django==6.1.2",
+    "django-allauth[socialaccount]>=65.0,<66",
     "django-environ>=0.12,<1",
     "djangorestframework>=3.16,<4",
     "groq>=0.30,<1",

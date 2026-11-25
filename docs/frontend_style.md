@@ -171,3 +171,11 @@ private commitment titles wrap inside the existing mobile editor. The shell,
 font, palette, and tokens retain the incumbent visual identity. All 451 tests
 pass; browser evidence and architecture are recorded in
 [proposed_shift_screen.md](proposed_shift_screen.md).
+
+## Short-screen account access and social sign-in
+
+Desktop navigation scrolls independently while the account footer stays inside
+`100dvh`. Below 741px viewport height, the decorative sidebar note is hidden to
+reserve space for account controls. The compact phone header is preserved.
+Google/GitHub sign-in forms use existing button, card, color and typography rules;
+only configured providers appear. See [social sign-in setup](social_auth.md).

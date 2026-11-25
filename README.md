@@ -363,3 +363,10 @@ The read-only assistant is available at `/chat/` and in the **Ask my schedule**
 panel. Configure a Groq Free-tier API key in `.env` and restart Django to enable
 answers. ChatGPT Plus does not cover this API. See [chat setup and architecture](docs/chat_assistant.md)
 for configuration, privacy, free-quota limits, and the rehearsal checklist.
+
+## Google and GitHub sign-in
+
+Social sign-in can create accounts for demo participants. Configure provider client
+IDs and secrets, run `uv run python manage.py migrate`, and restart the app. See
+[provider registration and exact callback URLs](docs/social_auth.md). Existing
+username/password login stays available; provider buttons appear when configured.

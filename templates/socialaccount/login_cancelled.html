@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Sign-in cancelled | Smart Schedule{% endblock %}
+{% block content %}
+<section class="auth-card social-auth-card">
+  <h1>Sign-in cancelled</h1>
+  <p>You can try again with Google, GitHub, or your existing username.</p>
+  <a class="btn btn-primary" href="{% url 'login' %}">Back to sign in</a>
+</section>
+{% endblock %}
